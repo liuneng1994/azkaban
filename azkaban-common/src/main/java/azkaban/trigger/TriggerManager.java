@@ -16,26 +16,26 @@
 
 package azkaban.trigger;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import azkaban.depFlows.*;
+import azkaban.event.Event;
+import azkaban.event.Event.Type;
+import azkaban.event.EventHandler;
+import azkaban.event.EventListener;
+import azkaban.executor.ExecutableFlow;
+import azkaban.executor.ExecutorManager;
+import azkaban.executor.JdbcExecutorLoader;
+import azkaban.executor.Status;
+import azkaban.mutFlows.MutFlows;
+import azkaban.mutFlows.MutFlowsLoader;
+import azkaban.mutFlows.jdbcMutFlowsLoader;
+import azkaban.trigger.builtin.ExecuteFlowAction;
+import azkaban.utils.Props;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
-
-import org.apache.log4j.Logger;
-
-import azkaban.event.Event;
-import azkaban.event.EventHandler;
-import azkaban.event.EventListener;
-import azkaban.event.Event.Type;
-import azkaban.executor.ExecutableFlow;
-import azkaban.executor.ExecutorManager;
-import azkaban.utils.Props;
 
 public class TriggerManager extends EventHandler implements
     TriggerManagerAdapter {
@@ -43,11 +43,14 @@ public class TriggerManager extends EventHandler implements
   public static final long DEFAULT_SCANNER_INTERVAL_MS = 60000;
 
   private static Map<Integer, Trigger> triggerIdMap =
-      new ConcurrentHashMap<Integer, Trigger>();
+          new ConcurrentHashMap<Integer, Trigger>();
 
   private CheckerTypeLoader checkerTypeLoader;
   private ActionTypeLoader actionTypeLoader;
   private TriggerLoader triggerLoader;
+  private DepFlowsLoader depFlowsLoader;
+  private MutFlowsLoader mutFlowsLoader;
+  private ExecutorManager executorManager;
 
   private final TriggerScannerThread runnerThread;
   private long lastRunnerThreadCheckTime = -1;
@@ -55,19 +58,20 @@ public class TriggerManager extends EventHandler implements
   private LocalTriggerJMX jmxStats = new LocalTriggerJMX();
 
   private ExecutorManagerEventListener listener =
-      new ExecutorManagerEventListener();
+          new ExecutorManagerEventListener();
 
   private final Object syncObj = new Object();
 
   private String scannerStage = "";
 
   public TriggerManager(Props props, TriggerLoader triggerLoader,
-      ExecutorManager executorManager) throws TriggerManagerException {
-
+                        ExecutorManager executorManager,DepFlowsLoader depFlowsLoader,jdbcMutFlowsLoader mutFlowsLoader) throws TriggerManagerException {
+    this.executorManager = executorManager;
     this.triggerLoader = triggerLoader;
-
+    this.depFlowsLoader = depFlowsLoader;
+    this.mutFlowsLoader=mutFlowsLoader;
     long scannerInterval =
-        props.getLong("trigger.scan.interval", DEFAULT_SCANNER_INTERVAL_MS);
+            props.getLong("trigger.scan.interval", DEFAULT_SCANNER_INTERVAL_MS);
     runnerThread = new TriggerScannerThread(scannerInterval);
 
     checkerTypeLoader = new CheckerTypeLoader();
@@ -139,7 +143,7 @@ public class TriggerManager extends EventHandler implements
     synchronized (syncObj) {
       if (!triggerIdMap.containsKey(id)) {
         throw new TriggerManagerException("The trigger to update " + id
-            + " doesn't exist!");
+                + " doesn't exist!");
       }
 
       Trigger t;
@@ -224,8 +228,8 @@ public class TriggerManager extends EventHandler implements
             lastRunnerThreadCheckTime = System.currentTimeMillis();
 
             scannerStage =
-                "Ready to start a new scan cycle at "
-                    + lastRunnerThreadCheckTime;
+                    "Ready to start a new scan cycle at "
+                            + lastRunnerThreadCheckTime;
 
             try {
               checkAllTriggers();
@@ -241,12 +245,12 @@ public class TriggerManager extends EventHandler implements
             scannerStage = "Done flipping all triggers.";
 
             runnerThreadIdleTime =
-                scannerInterval
-                    - (System.currentTimeMillis() - lastRunnerThreadCheckTime);
+                    scannerInterval
+                            - (System.currentTimeMillis() - lastRunnerThreadCheckTime);
 
             if (runnerThreadIdleTime < 0) {
               logger.error("Trigger manager thread " + this.getName()
-                  + " is too busy!");
+                      + " is too busy!");
             } else {
               syncObj.wait(runnerThreadIdleTime);
             }
@@ -264,7 +268,6 @@ public class TriggerManager extends EventHandler implements
       for (Trigger t : triggers) {
         try {
           scannerStage = "Checking for trigger " + t.getTriggerId();
-
           boolean shouldSkip = true;
           if (shouldSkip && t.getInfo() != null && t.getInfo().containsKey("monitored.finished.execution")) {
             int execId = Integer.valueOf((String) t.getInfo().get("monitored.finished.execution"));
@@ -277,7 +280,7 @@ public class TriggerManager extends EventHandler implements
             shouldSkip = false;
           }
 
-          logger.info("Get Next Check Time =" + t.getNextCheckTime() + "  now = " + now );
+          logger.info("Get Next Check Time =" + t.getNextCheckTime() + "  now = " + now);
           if (shouldSkip) {
             logger.info("Skipping trigger" + t.getTriggerId() + " until " + t.getNextCheckTime());
           }
@@ -287,6 +290,55 @@ public class TriggerManager extends EventHandler implements
           }
           if (t.getStatus().equals(TriggerStatus.READY)) {
             if (t.triggerConditionMet()) {
+              logger.info("进入triggers检查");
+              /**********************/
+              List<TriggerAction> actions = t.getActions();
+              logger.info("获取triggeraction:"+actions);
+              //actions.get(0).getDescription().split("flowName")[1].split("\"")[2]
+              logger.info("判断是否可以转为ExecuteFlowAction");
+              if(actions.get(0) instanceof ExecuteFlowAction) {
+                logger.info("进入强转");
+                ExecuteFlowAction a = (ExecuteFlowAction) actions.get(0);
+                logger.info("获取的ExecuteFlowAction"+a);
+                   String flowName=a.getFlowName();
+                  int projectId = a.getProjectId();
+                logger.info("打印参数"+flowName+"----------"+projectId);
+                  List<DepFlows> flows = depFlowsLoader.loadDepFlows(flowName);
+                logger.info("获取flow的依赖"+flows);
+                List<MutFlows> mflows = mutFlowsLoader.loadMutFlows(flowName);
+                logger.info("获取flow的互斥"+mflows);
+                ExecutableFlow depf = null;
+                ExecutableFlow mutf = null;
+                    List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(projectId, flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
+                logger.info("获取flow的依赖的流列表和状态"+exeflows);
+                for (ExecutableFlow flow : exeflows) {
+                  logger.info("遍历依赖流详情"+flow);
+                      if (DateUtils.isToday(flow.getStartTime()))
+                        depf = flow;
+                    }
+                List<ExecutableFlow> m1 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.READY);
+                List<ExecutableFlow> m2 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.PREPARING);
+                List<ExecutableFlow> m3 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.PAUSED);
+                List<ExecutableFlow> mexeflows = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.RUNNING);
+                mexeflows.addAll(m1);
+                mexeflows.addAll(m2);
+                mexeflows.addAll(m3);
+                logger.info("获取flow的互斥的流列表和状态"+mexeflows);
+                for (ExecutableFlow flow : mexeflows) {
+                  logger.info("遍历互斥流详情"+flow);
+                  if (DateUtils.isToday(flow.getStartTime()))
+                    mutf = flow;
+                }
+                logger.info("是否存在符合互斥条件的流 "+mutf == null);
+                logger.info("是否存在符合依赖条件的流 "+depf == null);
+                    if (depf == null||mutf!=null) {
+                      logger.info("让流执行时间延迟");
+                      t.resetTriggerConditionsWithSleep();
+                    }
+
+              /**********************/
+              }
+              logger.info("继续检查triggle");
               onTriggerTrigger(t);
             } else if (t.expireConditionMet()) {
               onTriggerExpire(t);
@@ -337,10 +389,10 @@ public class TriggerManager extends EventHandler implements
           action.doAction();
         } catch (Exception e) {
           logger.error("Failed to do expire action " + action.getDescription(),
-              e);
+                  e);
         } catch (Throwable th) {
           logger.error("Failed to do expire action " + action.getDescription(),
-              th);
+                  th);
         }
       }
       if (t.isResetOnExpire()) {
@@ -396,11 +448,11 @@ public class TriggerManager extends EventHandler implements
 
   @Override
   public List<Trigger> getTriggerUpdates(String triggerSource,
-      long lastUpdateTime) throws TriggerManagerException {
+                                         long lastUpdateTime) throws TriggerManagerException {
     List<Trigger> triggers = new ArrayList<Trigger>();
     for (Trigger t : triggerIdMap.values()) {
       if (t.getSource().equals(triggerSource)
-          && t.getLastModifyTime() > lastUpdateTime) {
+              && t.getLastModifyTime() > lastUpdateTime) {
         triggers.add(t);
       }
     }
@@ -409,7 +461,7 @@ public class TriggerManager extends EventHandler implements
 
   @Override
   public List<Trigger> getAllTriggerUpdates(long lastUpdateTime)
-      throws TriggerManagerException {
+          throws TriggerManagerException {
     List<Trigger> triggers = new ArrayList<Trigger>();
     for (Trigger t : triggerIdMap.values()) {
       if (t.getLastModifyTime() > lastUpdateTime) {
@@ -421,7 +473,7 @@ public class TriggerManager extends EventHandler implements
 
   @Override
   public void insertTrigger(Trigger t, String user)
-      throws TriggerManagerException {
+          throws TriggerManagerException {
     insertTrigger(t);
   }
 
@@ -432,7 +484,7 @@ public class TriggerManager extends EventHandler implements
 
   @Override
   public void updateTrigger(Trigger t, String user)
-      throws TriggerManagerException {
+          throws TriggerManagerException {
     updateTrigger(t);
   }
 
@@ -501,13 +553,13 @@ public class TriggerManager extends EventHandler implements
 
   @Override
   public void registerCheckerType(String name,
-      Class<? extends ConditionChecker> checker) {
+                                  Class<? extends ConditionChecker> checker) {
     checkerTypeLoader.registerCheckerType(name, checker);
   }
 
   @Override
   public void registerActionType(String name,
-      Class<? extends TriggerAction> action) {
+                                 Class<? extends TriggerAction> action) {
     actionTypeLoader.registerActionType(name, action);
   }
 
@@ -528,4 +580,25 @@ public class TriggerManager extends EventHandler implements
     }
   }
 
+
+  public static void main(String[] args) {
+    Props props = new Props();
+    props.put("mysql.port", 3306);
+    props.put("database.type","mysql");
+    props.put("mysql.host","172.20.0.28");
+    props.put("mysql.database","azkaban");
+    props.put("mysql.user","root");
+    props.put("mysql.password","handhand");
+    props.put("mysql.numconnections", 10);
+    System.out.println(new jdbcDepFlowsLoader(props).loadDepFlows("test2"));
+    try {
+      TriggerLoader loader = new JdbcTriggerLoader(props);
+      jdbcDepFlowsLoader flowsLoader=new jdbcDepFlowsLoader(props);
+      JdbcExecutorLoader loader1 = new JdbcExecutorLoader(props);
+      ExecutorManager execManager = new ExecutorManager(props, loader1, null);
+     // new TriggerManager(props, loader, execManager,flowsLoader);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }

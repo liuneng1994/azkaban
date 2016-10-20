@@ -56,7 +56,7 @@ public class JdbcExecutorLoader extends AbstractJdbcLoader implements
   private static final Logger logger = Logger
       .getLogger(JdbcExecutorLoader.class);
 
-  private EncodingType defaultEncodingType = EncodingType.GZIP;
+  private EncodingType defaultEncodingType = EncodingType.PLAIN;
 
   public JdbcExecutorLoader(Props props) {
     super(props);

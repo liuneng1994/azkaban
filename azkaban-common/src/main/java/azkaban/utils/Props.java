@@ -68,7 +68,6 @@ public class Props {
    * Load props from a file.
    *
    * @param parent
-   * @param file
    * @throws IOException
    */
   public Props(Props parent, String filepath) throws IOException {
@@ -100,8 +99,8 @@ public class Props {
    * Create props from property input streams
    *
    * @param parent
-   * @param inputStreams
-   * @throws IOException
+   * @param inputStream  *
+ @throws IOException
    */
   public Props(Props parent, InputStream inputStream) throws IOException {
     this(parent);
@@ -436,7 +435,6 @@ public class Props {
    * defaultClass
    *
    * @param key
-   * @param c
    * @return
    */
   public Class<?> getClass(String key, Class<?> defaultClass) {
@@ -468,7 +466,6 @@ public class Props {
    * UndefinedPropertiesException
    *
    * @param key
-   * @param defaultValue
    * @return
    */
   public String getString(String key) {
@@ -578,7 +575,6 @@ public class Props {
    * the default value is returned. If the value isn't a long, then a parse
    * exception will be thrown.
    *
-   * @param key
    * @param defaultValue
    * @return
    */
@@ -595,7 +591,6 @@ public class Props {
    * UndefinedPropertyException will be thrown. If the value isn't a long, then
    * a parse exception will be thrown.
    *
-   * @param key
    * @return
    */
   public long getLong(String name) {
@@ -612,7 +607,6 @@ public class Props {
    * default value is returned. If the value isn't a int, then a parse exception
    * will be thrown.
    *
-   * @param key
    * @param defaultValue
    * @return
    */
@@ -629,7 +623,6 @@ public class Props {
    * UndefinedPropertyException will be thrown. If the value isn't a int, then a
    * parse exception will be thrown.
    *
-   * @param key
    * @return
    */
   public int getInt(String name) {
@@ -646,7 +639,6 @@ public class Props {
    * the default value is returned. If the value isn't a double, then a parse
    * exception will be thrown.
    *
-   * @param key
    * @param defaultValue
    * @return
    */
@@ -663,7 +655,6 @@ public class Props {
    * a UndefinedPropertyException will be thrown. If the value isn't a double,
    * then a parse exception will be thrown.
    *
-   * @param key
    * @return
    */
   public double getDouble(String name) {
@@ -680,8 +671,6 @@ public class Props {
    * default value is returned. If the value isn't a uri, then a
    * IllegalArgumentException will be thrown.
    *
-   * @param key
-   * @param defaultValue
    * @return
    */
   public URI getUri(String name) {
@@ -702,7 +691,6 @@ public class Props {
    * the default value is returned. If the value isn't a uri, then a
    * IllegalArgumentException will be thrown.
    *
-   * @param key
    * @param defaultValue
    * @return
    */

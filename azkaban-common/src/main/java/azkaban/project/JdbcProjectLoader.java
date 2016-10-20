@@ -16,41 +16,23 @@
 
 package azkaban.project;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import azkaban.database.AbstractJdbcLoader;
+import azkaban.flow.Flow;
+import azkaban.project.ProjectLogEvent.EventType;
+import azkaban.user.Permission;
+import azkaban.user.User;
+import azkaban.utils.*;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import azkaban.database.AbstractJdbcLoader;
-import azkaban.flow.Flow;
-import azkaban.project.ProjectLogEvent.EventType;
-import azkaban.user.Permission;
-import azkaban.user.User;
-import azkaban.utils.GZIPUtils;
-import azkaban.utils.JSONUtils;
-import azkaban.utils.Md5Hasher;
-import azkaban.utils.Pair;
-import azkaban.utils.Props;
-import azkaban.utils.PropsUtils;
-import azkaban.utils.Triple;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 public class JdbcProjectLoader extends AbstractJdbcLoader implements
     ProjectLoader {
@@ -60,7 +42,7 @@ public class JdbcProjectLoader extends AbstractJdbcLoader implements
   private static final int CHUCK_SIZE = 1024 * 1024 * 10;
   private File tempDir;
 
-  private EncodingType defaultEncodingType = EncodingType.GZIP;
+  private EncodingType defaultEncodingType = EncodingType.PLAIN;
 
   public JdbcProjectLoader(Props props) {
     super(props);

@@ -49,7 +49,7 @@ public class TriggerManagerDeadlockTest {
     Map<String, Alerter> alerters = new HashMap<String, Alerter>();
     ExecutorManager executorManager =
         new ExecutorManager(props, execLoader, alerters);
-    triggerManager = new TriggerManager(props, loader, executorManager);
+    triggerManager = new TriggerManager(props, loader, executorManager,null,null);
   }
 
   @After

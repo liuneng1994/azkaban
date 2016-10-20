@@ -16,16 +16,14 @@
 
 package azkaban.trigger;
 
+import azkaban.utils.JSONUtils;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-import org.joda.time.DateTime;
-
-import azkaban.utils.JSONUtils;
 
 public class Trigger {
 
@@ -287,6 +285,14 @@ public class Trigger {
     updateNextCheckTime();
   }
 
+  /**
+   * 新增延迟触发时间
+   * 2016-10-20 14:32:03
+   */
+  public void resetTriggerConditionsWithSleep() {
+    triggerCondition.resetCheckersWithSleep(10000);
+    updateNextCheckTime();
+  }
   public void resetExpireCondition() {
     expireCondition.resetCheckers();
     updateNextCheckTime();

@@ -1,5 +1,7 @@
 package azkaban.utils;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -7,8 +9,6 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author wkang
@@ -27,7 +27,9 @@ public class SystemMemoryInfo {
   private static String MEMINFO_FILE = "/proc/meminfo"; 
   private static boolean memCheckEnabled;
   private static long freeMemAmount = 0;
-  private static final long LOW_MEM_THRESHOLD = 3L*1024L*1024L; //3 GB
+
+  //修改了最低内存限制原值:  3L*1024L*1024L
+  private static final long LOW_MEM_THRESHOLD = 200*1024L; //3 GB
 
   private static ScheduledExecutorService scheduledExecutorService;
 

@@ -37,6 +37,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import azkaban.depFlows.jdbcDepFlowsLoader;
+import azkaban.mutFlows.jdbcMutFlowsLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.jmx.HierarchyDynamicMBean;
@@ -273,7 +275,9 @@ public class AzkabanWebServer extends AzkabanServer {
   private TriggerManager loadTriggerManager(Props props)
       throws TriggerManagerException {
     TriggerLoader loader = new JdbcTriggerLoader(props);
-    return new TriggerManager(props, loader, executorManager);
+    jdbcDepFlowsLoader flowsLoader=new jdbcDepFlowsLoader(props);
+    jdbcMutFlowsLoader mutFlowsLoader=new jdbcMutFlowsLoader(props);
+    return new TriggerManager(props, loader, executorManager,flowsLoader,mutFlowsLoader);
   }
 
   private void loadBuiltinCheckersAndActions() {

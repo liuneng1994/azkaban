@@ -16,6 +16,16 @@
 
 package azkaban.trigger;
 
+import azkaban.database.AbstractJdbcLoader;
+import azkaban.utils.GZIPUtils;
+import azkaban.utils.JSONUtils;
+import azkaban.utils.Props;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -24,23 +34,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.log4j.Logger;
-
-import org.joda.time.DateTime;
-
-import azkaban.database.AbstractJdbcLoader;
-import azkaban.utils.GZIPUtils;
-import azkaban.utils.JSONUtils;
-import azkaban.utils.Props;
-
 public class JdbcTriggerLoader extends AbstractJdbcLoader implements
     TriggerLoader {
   private static Logger logger = Logger.getLogger(JdbcTriggerLoader.class);
 
-  private EncodingType defaultEncodingType = EncodingType.GZIP;
+  private EncodingType defaultEncodingType = EncodingType.PLAIN;
 
   private static final String triggerTblName = "triggers";
 

@@ -27,9 +27,9 @@ public class DefaultMailCreatorTest {
   // 2016/07/17 11:54:11 EEST
   public static final long START_TIME_MILLIS = 1468745651608L;
   // 2016/07/17 11:54:16 EEST (START_TIME_MILLIS + 5 seconds)
-  public static final long END_TIME_MILLIS = START_TIME_MILLIS + 5_000L;
+  public static final long END_TIME_MILLIS = START_TIME_MILLIS + 5000L;
   // 2016/07/17 11:54:21 EEST (START_TIME_MILLIS + 10 seconds)
-  public static final long FIXED_CURRENT_TIME_MILLIS = START_TIME_MILLIS + 10_000L;
+  public static final long FIXED_CURRENT_TIME_MILLIS = START_TIME_MILLIS + 10000L;
 
   private DefaultMailCreator mailCreator;
 

@@ -16,16 +16,16 @@
 
 package azkaban.trigger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.MapContext;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Condition {
 
@@ -98,6 +98,27 @@ public class Condition {
       time = Math.min(time, checker.getNextCheckTime());
     }
     this.nextCheckTime = time;
+  }
+
+  /**
+   * 新增
+   */
+  private void updateNextCheckTimeWithSleep(int millionSecond) {
+    long time = Long.MAX_VALUE;
+    for (ConditionChecker checker : checkers.values()) {
+      time = Math.min(time, checker.getNextCheckTime());
+    }
+    logger.info(this.toJson() + "延迟" + millionSecond + "ms");
+    this.nextCheckTime = time + millionSecond;
+  }
+
+  public void resetCheckersWithSleep(int millionSecond) {
+    for (ConditionChecker checker : checkers.values()) {
+      checker.reset();
+    }
+    updateNextCheckTimeWithSleep(millionSecond);
+    logger.info("Done resetting checkers. The next check time will be "
+            + new DateTime(nextCheckTime));
   }
 
   public void resetCheckers() {
