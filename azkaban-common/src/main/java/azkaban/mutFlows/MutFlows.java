@@ -34,4 +34,23 @@ public class MutFlows {
     private String mutFlowId;
     private Date submitDate;
 
+    public Integer getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer getMutProjectId() {
+        return mutProjectId;
+    }
+
+    public void setMutProjectId(Integer mutProjectId) {
+        this.mutProjectId = mutProjectId;
+    }
+
+    private Integer projectId;
+    private Integer mutProjectId;
+
 }

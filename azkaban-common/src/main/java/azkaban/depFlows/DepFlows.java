@@ -34,4 +34,33 @@ public class DepFlows {
     private String depFlowId;
     private Date submitDate;
 
+    public Integer getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer getDepProjectId() {
+        return depProjectId;
+    }
+
+    public void setDepProjectId(Integer depProjectId) {
+        this.depProjectId = depProjectId;
+    }
+
+    private Integer projectId;
+    private Integer depProjectId;
+
+    @Override
+    public String toString() {
+        return "DepFlows{" +
+                "flowId='" + flowId + '\'' +
+                ", depFlowId='" + depFlowId + '\'' +
+                ", submitDate=" + submitDate +
+                ", projectId=" + projectId +
+                ", depProjectId=" + depProjectId +
+                '}';
+    }
 }

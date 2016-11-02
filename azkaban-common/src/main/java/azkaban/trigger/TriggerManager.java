@@ -30,6 +30,7 @@ import azkaban.mutFlows.MutFlowsLoader;
 import azkaban.mutFlows.jdbcMutFlowsLoader;
 import azkaban.trigger.builtin.ExecuteFlowAction;
 import azkaban.utils.Props;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -299,47 +300,72 @@ public class TriggerManager extends EventHandler implements
               if(actions.get(0) instanceof ExecuteFlowAction) {
                 logger.info("进入强转");
                 ExecuteFlowAction a = (ExecuteFlowAction) actions.get(0);
-                logger.info("获取的ExecuteFlowAction"+a);
+                logger.info("获取的ExecuteFlowAction:"+a);
                    String flowName=a.getFlowName();
                   int projectId = a.getProjectId();
-                logger.info("打印参数"+flowName+"----------"+projectId);
-                  List<DepFlows> flows = depFlowsLoader.loadDepFlows(flowName);
-                logger.info("获取flow的依赖"+flows);
-                List<MutFlows> mflows = mutFlowsLoader.loadMutFlows(flowName);
-                logger.info("获取flow的互斥"+mflows);
-                ExecutableFlow depf = null;
-                ExecutableFlow mutf = null;
-                    List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(projectId, flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
-                logger.info("获取flow的依赖的流列表和状态"+exeflows);
-                for (ExecutableFlow flow : exeflows) {
-                  logger.info("遍历依赖流详情"+flow);
-                      if (DateUtils.isToday(flow.getStartTime()))
+                logger.info("打印参数 "+flowName+"----------"+projectId);
+                  List<DepFlows> flows = depFlowsLoader.loadDepFlows(flowName,projectId);
+                logger.info("获取flow的依赖 "+flows.size());
+                List<MutFlows> mflows = mutFlowsLoader.loadMutFlows(flowName,projectId);
+                logger.info("获取flow的互斥 :"+mflows.size());
+                if(flows.size()!=0||mflows.size()!=0)
+                {
+                  ExecutableFlow depf = new ExecutableFlow();
+                  ExecutableFlow mutf = new ExecutableFlow();
+                  if(flows.size()!=0) {
+                    logger.info("有依赖流");
+                    logger.info(flows.get(0).toString());
+                    List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
+                    logger.info("获取flow的依赖的流列表和状态" + exeflows.size());
+                    for (ExecutableFlow flow : exeflows) {
+                      logger.info("遍历依赖流详情" + flow.getFlowId());
+                      if (DateUtils.isToday(flow.getStartTime())) {
+                        logger.info("有今天的依赖流没有完成" + flow.getId());
                         depf = flow;
+                      }
                     }
-                List<ExecutableFlow> m1 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.READY);
-                List<ExecutableFlow> m2 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.PREPARING);
-                List<ExecutableFlow> m3 = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.PAUSED);
-                List<ExecutableFlow> mexeflows = executorManager.getExecutableFlows(projectId, mflows.get(0).getMutFlowId(), 0, 20, Status.RUNNING);
-                mexeflows.addAll(m1);
-                mexeflows.addAll(m2);
-                mexeflows.addAll(m3);
-                logger.info("获取flow的互斥的流列表和状态"+mexeflows);
-                for (ExecutableFlow flow : mexeflows) {
-                  logger.info("遍历互斥流详情"+flow);
-                  if (DateUtils.isToday(flow.getStartTime()))
-                    mutf = flow;
+                  }
+                  if(mflows.size()!=0) {
+                    logger.info("有互斥流");
+                    logger.info(flows.get(0).toString());
+                    List<ExecutableFlow> m1 = executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.READY);
+                    List<ExecutableFlow> m2 = executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.PREPARING);
+                    List<ExecutableFlow> m3 = executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.PAUSED);
+                    List<ExecutableFlow> mexeflows = executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.RUNNING);
+                    mexeflows.addAll(m1);
+                    mexeflows.addAll(m2);
+                    mexeflows.addAll(m3);
+                    logger.info("获取flow的互斥的流列表和状态" + mexeflows.size());
+                    for (ExecutableFlow flow : mexeflows) {
+                      logger.info("遍历互斥流详情" + flow.getFlowId());
+                      if (DateUtils.isToday(flow.getStartTime()))
+                      {
+                        logger.info("有今天的互斥流在运行" + flow.getId());
+                        mutf = flow;
+                      }
+                    }
+                  }
+                  logger.info("是否存在符合互斥条件的流 ----"+mutf.getProjectName());
+                  logger.info("是否存在符合互斥条件的流 ----"+mutf.getProjectName()!=null);
+                  logger.info("是否存在符合互斥条件的流 ----"+StringUtils.isEmpty(mutf.getProjectName()));
+                  logger.info("是否存在符合依赖条件的流 -----"+depf.getProjectName());
+                  logger.info("是否存在符合依赖条件的流 -----"+depf.getProjectName()!=null);
+                  logger.info("是否存在符合依赖条件的流 -----"+StringUtils.isEmpty(depf.getProjectName()));
+                  if (StringUtils.isEmpty(depf.getProjectName())||!StringUtils.isEmpty(mutf.getProjectName())) {
+                    logger.info("让流执行时间延迟");
+                    t.resetTriggerConditionsWithSleep();
+                  }else
+                  {
+                    logger.info("继续检查triggle");
+                    onTriggerTrigger(t);
+                  }
+                }else
+                {
+                  logger.info("没有依赖或互斥，直接执行");
+                  onTriggerTrigger(t);
                 }
-                logger.info("是否存在符合互斥条件的流 "+mutf == null);
-                logger.info("是否存在符合依赖条件的流 "+depf == null);
-                    if (depf == null||mutf!=null) {
-                      logger.info("让流执行时间延迟");
-                      t.resetTriggerConditionsWithSleep();
-                    }
-
               /**********************/
               }
-              logger.info("继续检查triggle");
-              onTriggerTrigger(t);
             } else if (t.expireConditionMet()) {
               onTriggerExpire(t);
             }
@@ -581,7 +607,7 @@ public class TriggerManager extends EventHandler implements
   }
 
 
-  public static void main(String[] args) {
+/*  public static void main(String[] args) {
     Props props = new Props();
     props.put("mysql.port", 3306);
     props.put("database.type","mysql");
@@ -590,7 +616,7 @@ public class TriggerManager extends EventHandler implements
     props.put("mysql.user","root");
     props.put("mysql.password","handhand");
     props.put("mysql.numconnections", 10);
-    System.out.println(new jdbcDepFlowsLoader(props).loadDepFlows("test2"));
+    System.out.println(new jdbcDepFlowsLoader(props).loadDepFlows("test2",0));
     try {
       TriggerLoader loader = new JdbcTriggerLoader(props);
       jdbcDepFlowsLoader flowsLoader=new jdbcDepFlowsLoader(props);
@@ -600,5 +626,5 @@ public class TriggerManager extends EventHandler implements
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
+  }*/
 }

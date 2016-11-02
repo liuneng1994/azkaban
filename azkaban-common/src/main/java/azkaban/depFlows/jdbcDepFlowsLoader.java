@@ -26,7 +26,7 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
     }
 
     private static String GET_DEPFLOWS =
-            "SELECT flow_id,dep_flow_id,submit_date FROM dep_flows WHERE flow_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
+            "SELECT flow_id,dep_flow_id,submit_date,project_id,dep_project_id FROM dep_flows WHERE flow_id=? and project_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
     private static String GET_EXEFLOWS =
             "select count(*) from execution_flows where flow_id=? and `status` in (10,20,30,40,50)";
 
@@ -44,13 +44,17 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
                 String flowId = rs.getString(1);
                 String depFlowId = rs.getString(2);
                 Date submitDate = rs.getDate(3);
-
+                Integer projectId=rs.getInt(4);
+                Integer depProjectId=rs.getInt(5);
                 Object jsonObj = null;
 
                 DepFlows flow = new DepFlows();
                 flow.setDepFlowId(depFlowId);
                 flow.setFlowId(flowId);
                 flow.setSubmitDate(submitDate);
+                flow.setProjectId(projectId);
+                flow.setDepProjectId(depProjectId);
+
                 flows.add(flow);
             } while (rs.next());
 
@@ -82,13 +86,13 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
     }
 
     @Override
-    public List<DepFlows> loadDepFlows(String flow_id) {
+    public List<DepFlows> loadDepFlows(String flow_id,Integer projectId) {
         Connection connection = getConnection();
         QueryRunner runner = new QueryRunner();
         ResultSetHandler<List<DepFlows>> handler = new DepFlowsResultHandler();
         List<DepFlows> flows = null;
         try {
-            flows = runner.query(connection, GET_DEPFLOWS, handler, flow_id);
+            flows = runner.query(connection, GET_DEPFLOWS, handler, flow_id,projectId);
         } catch (SQLException e) {
             logger.error(GET_DEPFLOWS + " failed.");
         } finally {
@@ -112,7 +116,7 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
         }
         return count;
     }*/
-    public static void main(String[] args) {
+  /*  public static void main(String[] args) {
         Props props = new Props();
         props.put("mysql.port", 3306);
         props.put("database.type","mysql");
@@ -121,6 +125,6 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
         props.put("mysql.user","root");
         props.put("mysql.password","handhand");
         props.put("mysql.numconnections", 10);
-       // new jdbcDepFlowsLoader(props).checkMutFlows("test2");
-    }
+        new jdbcDepFlowsLoader(props).loadDepFlows("test2",0);
+    }*/
 }

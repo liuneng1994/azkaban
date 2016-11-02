@@ -25,7 +25,7 @@ public class jdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLo
     }
     private EncodingType defaultEncodingType = EncodingType.PLAIN;
     private static String GET_MUTFLOWS =
-            "SELECT flow_id,mut_flow_id,submit_date FROM mut_flows WHERE flow_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
+            "SELECT flow_id,mut_flow_id,submit_date,project_id,mut_project_id FROM mut_flows WHERE flow_id=? and project_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
 
 
 
@@ -42,13 +42,16 @@ public class jdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLo
                 String flowId = rs.getString(1);
                 String  mutFlowId = rs.getString(2);
                 Date submitDate = rs.getDate(3);
-
+                Integer projectId=rs.getInt(4);
+                Integer mutProjectId=rs.getInt(5);
                 Object jsonObj = null;
 
                 MutFlows flow = new MutFlows();
                 flow.setMutFlowId(mutFlowId);
                 flow.setFlowId(flowId);
                 flow.setSubmitDate(submitDate);
+                flow.setProjectId(projectId);
+                flow.setMutProjectId(mutProjectId);
                     flows.add(flow);
             } while (rs.next());
 
@@ -67,13 +70,13 @@ public class jdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLo
         return connection;
     }
     @Override
-    public List<MutFlows> loadMutFlows(String flow_id){
+    public List<MutFlows> loadMutFlows(String flow_id,Integer project_id){
         Connection connection = getConnection();
         QueryRunner runner = new QueryRunner();
         ResultSetHandler<List<MutFlows>> handler = new MutFlowsResultHandler();
         List<MutFlows> flows=null;
         try {
-            flows = runner.query(connection, GET_MUTFLOWS, handler, flow_id);
+            flows = runner.query(connection, GET_MUTFLOWS, handler, flow_id,project_id);
         } catch (SQLException e) {
             logger.error(GET_MUTFLOWS + " failed.");
         } finally {
