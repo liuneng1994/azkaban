@@ -25,7 +25,7 @@ public class jdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLo
     }
     private EncodingType defaultEncodingType = EncodingType.PLAIN;
     private static String GET_MUTFLOWS =
-            "SELECT flow_id,mut_flow_id,submit_date,project_id,mut_project_id FROM mut_flows WHERE flow_id=? and project_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
+            "SELECT flow_id,mut_flow_id,submit_date,project_id,mut_project_id FROM mut_flows WHERE flow_id=? and project_id=?";
 
 
 

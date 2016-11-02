@@ -26,7 +26,7 @@ public class jdbcDepFlowsLoader extends AbstractJdbcLoader implements DepFlowsLo
     }
 
     private static String GET_DEPFLOWS =
-            "SELECT flow_id,dep_flow_id,submit_date,project_id,dep_project_id FROM dep_flows WHERE flow_id=? and project_id=? and TO_DAYS(submit_date)=TO_DAYS(now())";
+            "SELECT flow_id,dep_flow_id,submit_date,project_id,dep_project_id FROM dep_flows WHERE flow_id=? and project_id=?";
     private static String GET_EXEFLOWS =
             "select count(*) from execution_flows where flow_id=? and `status` in (10,20,30,40,50)";
 
