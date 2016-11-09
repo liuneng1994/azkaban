@@ -219,5 +219,9 @@ public class BasicTimeChecker implements ConditionChecker {
   @Override
   public void setContext(Map<String, Object> context) {
   }
-
+  @Override
+  public void resetWithSleep(Long time)
+  {
+    this.nextCheckTime =time;
+  }
 }

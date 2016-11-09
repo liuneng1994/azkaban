@@ -100,24 +100,21 @@ public class Condition {
   /**
    * 新增
    */
-  private void updateNextCheckTimeWithSleep(int millionSecond) {
+  private void updateNextCheckTimeWithSleep() {
     long time = Long.MAX_VALUE;
     for (ConditionChecker checker : checkers.values()) {
       time = Math.min(time, checker.getNextCheckTime());
     }
     logger.info(new Date(time));
-    this.nextCheckTime = time + millionSecond;
-    //this.nextCheckTime = System.currentTimeMillis() + millionSecond;
-    logger.info(this.toJson() + "延迟" + millionSecond + "ms");
-
+    this.nextCheckTime = time;
+    logger.info(this.toJson());
   }
 
-  public void resetCheckersWithSleep(int millionSecond) {
+  public void resetCheckersWithSleep(Long millionSecond) {
     for (ConditionChecker checker : checkers.values()) {
-      checker.reset();
+      checker.resetWithSleep(checker.getNextCheckTime()+millionSecond);
     }
-    updateNextCheckTimeWithSleep(millionSecond);
-
+    updateNextCheckTimeWithSleep();
     logger.info("Done resetting checkers. The next check time will be "
             + new DateTime(nextCheckTime));
   }

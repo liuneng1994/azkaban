@@ -289,9 +289,9 @@ public class Trigger {
    * 新增延迟触发时间
    * 2016-10-20 14:32:03
    */
-  public void resetTriggerConditionsWithSleep() {
+  public void resetTriggerConditionsWithSleep(Long time) {
     logger.info("下次检查时间改变前:"+triggerCondition.getNextCheckTime());
-    triggerCondition.resetCheckersWithSleep(10000);
+    triggerCondition.resetCheckersWithSleep(time);
     updateNextCheckTime();
     //this.nextCheckTime =triggerCondition.getNextCheckTime();
     logger.info("下次检查时间改变后:"+triggerCondition.getNextCheckTime());

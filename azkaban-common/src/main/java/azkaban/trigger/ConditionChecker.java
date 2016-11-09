@@ -16,6 +16,7 @@
 
 package azkaban.trigger;
 
+import java.awt.*;
 import java.util.Map;
 
 public interface ConditionChecker {
@@ -40,4 +41,8 @@ public interface ConditionChecker {
 
   long getNextCheckTime();
 
+  default void resetWithSleep(Long time)
+  {
+
+  }
 }

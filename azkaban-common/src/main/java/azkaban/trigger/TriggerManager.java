@@ -53,7 +53,7 @@ public class TriggerManager extends EventHandler implements
   private DepFlowsLoader depFlowsLoader;
   private MutFlowsLoader mutFlowsLoader;
   private ExecutorManager executorManager;
-
+  private Long sleepTime;
   private final TriggerScannerThread runnerThread;
   private long lastRunnerThreadCheckTime = -1;
   private long runnerThreadIdleTime = -1;
@@ -74,6 +74,8 @@ public class TriggerManager extends EventHandler implements
     this.mutFlowsLoader=mutFlowsLoader;
     long scannerInterval =
             props.getLong("trigger.scan.interval", DEFAULT_SCANNER_INTERVAL_MS);
+    this.sleepTime= props.getLong("trigger.sleep.time", DEFAULT_SCANNER_INTERVAL_MS);
+    ;
     runnerThread = new TriggerScannerThread(scannerInterval);
 
     checkerTypeLoader = new CheckerTypeLoader();
@@ -396,11 +398,10 @@ public class TriggerManager extends EventHandler implements
                   if (dflag&&mflag) {
                     logger.info("继续检查triggle");
                     onTriggerTrigger(t);
-
                   }else
                   {
                     logger.info("让流执行时间延迟");
-                    t.resetTriggerConditionsWithSleep();
+                    t.resetTriggerConditionsWithSleep(sleepTime);
                     logger.info("下次执行时间："+t.getNextCheckTime());
                   }
                 }else
