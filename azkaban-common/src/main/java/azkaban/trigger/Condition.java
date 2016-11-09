@@ -22,10 +22,7 @@ import org.apache.commons.jexl2.MapContext;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Condition {
 
@@ -108,8 +105,11 @@ public class Condition {
     for (ConditionChecker checker : checkers.values()) {
       time = Math.min(time, checker.getNextCheckTime());
     }
-    logger.info(this.toJson() + "延迟" + millionSecond + "ms");
+    logger.info(new Date(time));
     this.nextCheckTime = time + millionSecond;
+    //this.nextCheckTime = System.currentTimeMillis() + millionSecond;
+    logger.info(this.toJson() + "延迟" + millionSecond + "ms");
+
   }
 
   public void resetCheckersWithSleep(int millionSecond) {
@@ -117,6 +117,7 @@ public class Condition {
       checker.reset();
     }
     updateNextCheckTimeWithSleep(millionSecond);
+
     logger.info("Done resetting checkers. The next check time will be "
             + new DateTime(nextCheckTime));
   }

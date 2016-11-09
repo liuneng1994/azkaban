@@ -29,6 +29,7 @@ import azkaban.mutFlows.MutFlows;
 import azkaban.mutFlows.MutFlowsLoader;
 import azkaban.mutFlows.jdbcMutFlowsLoader;
 import azkaban.trigger.builtin.ExecuteFlowAction;
+import azkaban.trigger.builtin.KillExecutionAction;
 import azkaban.utils.Props;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -289,7 +290,10 @@ public class TriggerManager extends EventHandler implements
           if (logger.isDebugEnabled()) {
             logger.info("Checking trigger " + t.getTriggerId());
           }
+          logger.info("trigger的状态"+t.getStatus());
+          logger.info(t.triggerConditionMet());
           if (t.getStatus().equals(TriggerStatus.READY)) {
+            logger.info("进入triggers检查");
             if (t.triggerConditionMet()) {
               logger.info("进入triggers检查");
               /**********************/
@@ -316,16 +320,32 @@ public class TriggerManager extends EventHandler implements
                   ExecutableFlow mutf = new ExecutableFlow();
                   if(flows.size()!=0) {
                     dflag=false;
-                    logger.info("有依赖流");
-                    logger.info(flows.get(0).toString());
-                    List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
-                    logger.info("获取flow的依赖的流列表和状态" + exeflows.size());
-                    for (ExecutableFlow flow : exeflows) {
-                      logger.info("遍历依赖流详情" + flow.getFlowId());
-                      if (DateUtils.isToday(flow.getEndTime())) {
-                        logger.info("有今天的依赖流完成" + flow.getId());
-                        dflag=true;
-                        depf = flow;
+                    /*********************************/
+                    List<ExecutableFlow> e1 = new ArrayList<ExecutableFlow>();
+                    e1=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.READY);
+                    List<ExecutableFlow> e2 =new ArrayList<ExecutableFlow>();
+                    e2=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.PREPARING);
+                    List<ExecutableFlow> e3 = new ArrayList<ExecutableFlow>();
+                    e3=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.PAUSED);
+                    List<ExecutableFlow> e4 =new ArrayList<ExecutableFlow>();
+                    e4=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.RUNNING);
+                    /*********************************/
+                    if(e1.size()>0||e2.size()>0||e3.size()>0||e4.size()>0)
+                    {dflag=false;}
+                    else {
+                      List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
+                      logger.info("获取flow的依赖的流列表和状态" + exeflows.size());
+                      if (exeflows.size()>0) {
+                        logger.info("获取flow的依赖的流数量" + exeflows.size());
+                        for(ExecutableFlow flow:exeflows)
+                        {
+                          logger.info(flow.getEndTime());
+                          logger.info(DateUtils.isToday(flow.getEndTime()));
+                        }
+                        if (DateUtils.isToday(exeflows.get(0).getEndTime())) {
+                          logger.info("有今天的依赖流完成" + exeflows.get(0).getId());
+                          dflag = true;
+                        }
                       }
                     }
                   }
@@ -360,11 +380,14 @@ public class TriggerManager extends EventHandler implements
                     logger.info("获取flow的互斥的流列表和状态" + m4.size());
                     for (ExecutableFlow flow : m4) {
                       logger.info("遍历互斥流详情" + flow.getFlowId());
-                      if (DateUtils.isToday(flow.getStartTime()))
-                      {
-                        logger.info("有今天的互斥流在运行" + flow.getId());
-                        mflag=false;
-                        mutf = flow;
+                      logger.info(flow.getStartTime());
+                      logger.info(DateUtils.isToday(flow.getStartTime()));
+                    }
+                    if(m4.size()>0) {
+                      if (DateUtils.isToday(m4.get(0).getSubmitTime())) {
+                        logger.info("有今天的互斥流在运行" + m4.get(0).getId());
+                        mflag = false;
+                        mutf = m4.get(0);
                       }
                     }
                   }
@@ -378,6 +401,7 @@ public class TriggerManager extends EventHandler implements
                   {
                     logger.info("让流执行时间延迟");
                     t.resetTriggerConditionsWithSleep();
+                    logger.info("下次执行时间："+t.getNextCheckTime());
                   }
                 }else
                 {
