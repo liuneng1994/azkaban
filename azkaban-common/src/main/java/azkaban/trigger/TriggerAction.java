@@ -34,4 +34,5 @@ public interface TriggerAction {
 
   String getDescription();
 
+  default void doActionForSla(int id)throws Exception{};
 }

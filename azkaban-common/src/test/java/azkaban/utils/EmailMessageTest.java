@@ -27,12 +27,12 @@ import org.junit.Test;
 
 public class EmailMessageTest {
 
-  String host = "";
-  String sender = "";
-  String user = "";
-  String password = "";
+  String host = "smtp.126.com";
+  String sender = "zhilongdeng123@126.com";
+  String user = "zhilongdeng123@126.com";
+  String password = "dengzhilong520";
 
-  String toAddr = "";
+  String toAddr = "452926826@qq.com";
 
   private EmailMessage em;
 
@@ -46,7 +46,6 @@ public class EmailMessageTest {
   public void tearDown() throws Exception {
   }
 
-  @Ignore
   @Test
   public void testSendEmail() throws IOException {
     em.addToAddress(toAddr);

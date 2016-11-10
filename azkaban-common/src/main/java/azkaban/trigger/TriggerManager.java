@@ -211,6 +211,38 @@ public class TriggerManager extends EventHandler implements
     public void addJustFinishedFlow(ExecutableFlow flow) {
       synchronized (syncObj) {
         justFinishedFlows.put(flow.getExecutionId(), flow);
+        /************************************/
+        List<Trigger> triggers = null;
+        try {
+          triggers = triggerLoader.loadTriggers();
+          for (Trigger t : triggers) {
+            logger.info(t);
+            List<TriggerAction> actions = t.getTriggerActions();
+            String flowName="";
+            for (TriggerAction action : actions) {
+              logger.info("======"+action);
+              if(action instanceof ExecuteFlowAction)
+              {
+                logger.info("-----"+action);
+                ExecuteFlowAction a = (ExecuteFlowAction)action;
+                flowName=a.getFlowName();
+                logger.info("-----"+flowName+"----"+flow.getFlowId());
+                if(flowName.endsWith(flow.getFlowId()))
+                {
+                  try {
+                    logger.info("即将发送sla邮件");
+                    a.doActionForSla(flow.getExecutionId());
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                }
+              }
+            }
+          }
+        } catch (TriggerLoaderException e) {
+          e.printStackTrace();
+        }
+        /************************************/
       }
     }
 
@@ -431,6 +463,7 @@ public class TriggerManager extends EventHandler implements
       List<TriggerAction> actions = t.getTriggerActions();
       for (TriggerAction action : actions) {
         try {
+          logger.info(action);
           logger.info("Doing trigger actions");
           action.doAction();
         } catch (Exception e) {

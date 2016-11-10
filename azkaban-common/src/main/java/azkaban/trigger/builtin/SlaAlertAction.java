@@ -104,13 +104,18 @@ public class SlaAlertAction implements TriggerAction {
     if (alert.containsKey(SlaOption.ALERT_TYPE)) {
       String alertType = (String) alert.get(SlaOption.ALERT_TYPE);
       Alerter alerter = alerters.get(alertType);
+      logger.info(execId);
+      logger.info("++++++"+slaOption);
       if (alerter != null) {
+        logger.info(execId);
         try {
           ExecutableFlow flow = executorManager.getExecutableFlow(execId);
+          logger.info(flow);
           alerter.alertOnSla(slaOption,
               SlaOption.createSlaMessage(slaOption, flow));
         } catch (Exception e) {
           e.printStackTrace();
+          logger.error(e);
           logger.error("Failed to alert by " + alertType);
         }
       } else {

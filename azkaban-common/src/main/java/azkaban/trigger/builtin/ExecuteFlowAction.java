@@ -298,6 +298,35 @@ public class ExecuteFlowAction implements TriggerAction {
   }
 
   @Override
+  public void doActionForSla(int id) throws Exception {
+    logger.info("进入sla邮件发送");
+    Project project = projectManager.getProject(projectId);
+    Flow flow = project.getFlow(flowName);
+    ExecutableFlow exflow = new ExecutableFlow(project, flow);
+    // deal with sla
+    if (slaOptions != null && slaOptions.size() > 0) {
+      logger.info("进入sla邮件发送");
+      int execId = id;
+      for (SlaOption sla : slaOptions) {
+        logger.info("进入sla邮件发送");
+        // if whole flow finish before violate sla, just expire
+        List<String> slaActions = sla.getActions();
+        for (String act : slaActions) {
+          logger.info("进入sla邮件发送");
+          if (act.equals(SlaOption.ACTION_ALERT)) {
+            logger.info("进入sla邮件发送");
+            logger.info(sla+"-----"+execId);
+            SlaAlertAction slaAlert =
+                    new SlaAlertAction("slaAlert", sla, execId);
+            logger.info(slaAlert);
+            slaAlert.doAction();
+          }
+        }
+      }
+    }
+
+  }
+  @Override
   public String getDescription() {
     return "Execute flow " + getFlowName() + " from project "
         + getProjectName();
