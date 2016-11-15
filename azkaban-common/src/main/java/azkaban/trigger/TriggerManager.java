@@ -353,75 +353,77 @@ public class TriggerManager extends EventHandler implements
                   ExecutableFlow depf = new ExecutableFlow();
                   ExecutableFlow mutf = new ExecutableFlow();
                   if(flows.size()!=0) {
-                    dflag=false;
+                    dflag = false;
                     /*********************************/
-                    List<ExecutableFlow> e1 = new ArrayList<ExecutableFlow>();
-                    e1=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.READY);
-                    List<ExecutableFlow> e2 =new ArrayList<ExecutableFlow>();
-                    e2=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.PREPARING);
+                  douter:
+                    for (DepFlows flow : flows)
+                    {
+                      List<ExecutableFlow> e1 = new ArrayList<ExecutableFlow>();
+                    e1 = executorManager.getExecutableFlows(flow.getDepProjectId(), flow.getDepFlowId(), 0, 20, Status.READY);
+                    List<ExecutableFlow> e2 = new ArrayList<ExecutableFlow>();
+                    e2 = executorManager.getExecutableFlows(flow.getDepProjectId(), flow.getDepFlowId(), 0, 20, Status.PREPARING);
                     List<ExecutableFlow> e3 = new ArrayList<ExecutableFlow>();
-                    e3=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.PAUSED);
-                    List<ExecutableFlow> e4 =new ArrayList<ExecutableFlow>();
-                    e4=executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.RUNNING);
+                    e3 = executorManager.getExecutableFlows(flow.getDepProjectId(), flow.getDepFlowId(), 0, 20, Status.PAUSED);
+                    List<ExecutableFlow> e4 = new ArrayList<ExecutableFlow>();
+                    e4 = executorManager.getExecutableFlows(flow.getDepProjectId(), flow.getDepFlowId(), 0, 20, Status.RUNNING);
                     /*********************************/
-                    if(e1.size()>0||e2.size()>0||e3.size()>0||e4.size()>0)
-                    {dflag=false;}
-                    else {
-                      List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(flows.get(0).getDepProjectId(), flows.get(0).getDepFlowId(), 0, 20, Status.SUCCEEDED);
+                    if (e1.size() > 0 || e2.size() > 0 || e3.size() > 0 || e4.size() > 0) {
+                      dflag = false;
+                      break douter;
+                    } else {
+                      List<ExecutableFlow> exeflows = executorManager.getExecutableFlows(flow.getDepProjectId(), flow.getDepFlowId(), 0, 20, Status.SUCCEEDED);
                       logger.info("获取flow的依赖的流列表和状态" + exeflows.size());
-                      if (exeflows.size()>0) {
-                        logger.info("获取flow的依赖的流数量" + exeflows.size());
-                        for(ExecutableFlow flow:exeflows)
-                        {
-                          logger.info(flow.getEndTime());
-                          logger.info(DateUtils.isToday(flow.getEndTime()));
-                        }
-                        if (DateUtils.isToday(exeflows.get(0).getEndTime())) {
-                          logger.info("有今天的依赖流完成" + exeflows.get(0).getId());
-                          dflag = true;
-                        }
+                      if (exeflows.size() > 0) {
+                          if (DateUtils.isToday(exeflows.get(0).getEndTime())) {
+                            logger.info("有今天的依赖流完成" + exeflows.get(0).getId());
+                            dflag = true;
+                          }else
+                          {
+                            dflag = false;
+                            break douter;
+                          }
+                      }else
+                      {
+                        dflag = false;
+                        break douter;
                       }
                     }
+
+                  }
                   }
                   if(mflows.size()!=0) {
                     logger.info("有互斥流");
-                    logger.info(mflows.get(0).toString());
-                    List<ExecutableFlow> m4 =new ArrayList<ExecutableFlow>();
-                    List<ExecutableFlow> m1 = new ArrayList<ExecutableFlow>();
-                    m1=executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.READY);
-                    List<ExecutableFlow> m2 =new ArrayList<ExecutableFlow>();
-                    m2=executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.PREPARING);
-                    List<ExecutableFlow> m3 = new ArrayList<ExecutableFlow>();
-                    m3=executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.PAUSED);
-                    List<ExecutableFlow> mexeflows =new ArrayList<ExecutableFlow>();
-                    mexeflows=executorManager.getExecutableFlows(mflows.get(0).getMutProjectId(), mflows.get(0).getMutFlowId(), 0, 20, Status.RUNNING);
-                    for (ExecutableFlow flow:mexeflows)
+                    for(MutFlows flow:mflows)
                     {
-                      m4.add(flow);
-                    }
-                    for (ExecutableFlow flow:m1)
-                   {
-                     m4.add(flow);
-                   }
-                    for (ExecutableFlow flow:m2)
-                    {
-                      m4.add(flow);
-                    }
-                    for (ExecutableFlow flow:m3)
-                    {
-                      m4.add(flow);
-                    }
-                    logger.info("获取flow的互斥的流列表和状态" + m4.size());
-                    for (ExecutableFlow flow : m4) {
-                      logger.info("遍历互斥流详情" + flow.getFlowId());
-                      logger.info(flow.getStartTime());
-                      logger.info(DateUtils.isToday(flow.getStartTime()));
-                    }
-                    if(m4.size()>0) {
-                      if (DateUtils.isToday(m4.get(0).getSubmitTime())) {
-                        logger.info("有今天的互斥流在运行" + m4.get(0).getId());
-                        mflag = false;
-                        mutf = m4.get(0);
+                      logger.info("有互斥流:"+flow.getFlowId());
+                      List<ExecutableFlow> m4 = new ArrayList<ExecutableFlow>();
+                      List<ExecutableFlow> m1 = new ArrayList<ExecutableFlow>();
+                      m1 = executorManager.getExecutableFlows(flow.getMutProjectId(), flow.getMutFlowId(), 0, 20, Status.READY);
+                      List<ExecutableFlow> m2 = new ArrayList<ExecutableFlow>();
+                      m2 = executorManager.getExecutableFlows(flow.getMutProjectId(), flow.getMutFlowId(), 0, 20, Status.PREPARING);
+                      List<ExecutableFlow> m3 = new ArrayList<ExecutableFlow>();
+                      m3 = executorManager.getExecutableFlows(flow.getMutProjectId(), flow.getMutFlowId(), 0, 20, Status.PAUSED);
+                      List<ExecutableFlow> mexeflows = new ArrayList<ExecutableFlow>();
+                      mexeflows = executorManager.getExecutableFlows(flow.getMutProjectId(), flow.getMutFlowId(), 0, 20, Status.RUNNING);
+                      for (ExecutableFlow flow1 : mexeflows) {
+                        m4.add(flow1);
+                      }
+                      for (ExecutableFlow flow1 : m1) {
+                        m4.add(flow1);
+                      }
+                      for (ExecutableFlow flow1 : m2) {
+                        m4.add(flow1);
+                      }
+                      for (ExecutableFlow flow1 : m3) {
+                        m4.add(flow1);
+                      }
+                      logger.info("获取flow的互斥的流列表和状态" + m4.size());
+                      if (m4.size() > 0) {
+                        if (DateUtils.isToday(m4.get(0).getSubmitTime())) {
+                          logger.info("有今天的互斥流在运行" + m4.get(0).getId());
+                          mflag = false;
+                          break;
+                        }
                       }
                     }
                   }
