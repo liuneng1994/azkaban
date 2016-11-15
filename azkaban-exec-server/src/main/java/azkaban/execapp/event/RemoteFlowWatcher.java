@@ -90,7 +90,10 @@ public class RemoteFlowWatcher extends FlowWatcher {
           for (ExecutableNode node : updatedNodes) {
             handleJobStatusChange(node.getNestedId(), node.getStatus());
           }
-
+          try {
+            loader.updateExecutableFlow(flow);
+          } catch (Exception e) {
+          }
           updateTime = flow.getUpdateTime();
         }
 
