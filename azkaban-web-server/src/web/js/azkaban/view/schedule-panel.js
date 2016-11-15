@@ -56,16 +56,6 @@ azkaban.SchedulePanelView = Backbone.View.extend({
 
     console.log("current Time = " + scheduleDate + "  " + scheduleTime );
     console.log("cronExpression = " +  scheduleData.cronExpression);
-    var retSignal = validateQuartzStr(scheduleData.cronExpression);
-
-    if(retSignal == "NUM_FIELDS_ERROR") {
-      messageDialogView.show("Cron Syntax Error", "A valid Quartz Cron Expression should have 6 or 7 fields.");
-      return;
-    } else if (retSignal == "DOW_DOM_STAR_ERROR") {
-      messageDialogView.show("Cron Syntax Error", "Currently Quartz doesn't support specifying both a day-of-week and a day-of-month value"
-          + "(you must use the ‘?’ character in one of these fields). <a href=\"http://www.quartz-scheduler.org/documentation/quartz-2.x/tutorials/crontrigger.html\">Detailed Explanation</a>");
-      return;
-    }
 
     var successHandler = function(data) {
       if (data.error) {
@@ -89,13 +79,6 @@ $(function() {
     el: $('#schedule-modal')
   });
 
-  $(document).keyup(function(e) {
-    // escape key maps to keycode `27`
-    if (e.keyCode == 27) {
-      schedulePanelView.hideSchedulePanel();
-    }
-  });
-  
   // To compute the current timezone's time offset against UTC.
   // Currently not useful.
   // var TimeZoneOffset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];

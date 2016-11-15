@@ -711,11 +711,4 @@ $(function() {
   contextMenuView = new azkaban.ContextMenuView({
     el: $('#contextMenu')
   });
-
-  $(document).keyup(function(e) {
-    // escape key maps to keycode `27`
-    if (e.keyCode == 27) {
-      flowExecuteDialogView.hideExecutionOptionPanel();
-    }
-  });
 });

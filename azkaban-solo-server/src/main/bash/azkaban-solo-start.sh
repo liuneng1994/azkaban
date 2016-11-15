@@ -2,10 +2,6 @@
 
 azkaban_dir=$(dirname $0)/..
 
-# Specifies location of azkaban.properties, log4j.properties files
-# Change if necessary
-conf=$azkaban_dir/conf
-
 if [[ -z "$tmpdir" ]]; then
 tmpdir=/tmp
 fi
@@ -41,19 +37,15 @@ fi
 echo $azkaban_dir;
 echo $CLASSPATH;
 
-executorport=`cat $conf/azkaban.properties | grep executor.port | cut -d = -f 2`
+executorport=`cat $azkaban_dir/conf/azkaban.properties | grep executor.port | cut -d = -f 2`
 serverpath=`pwd`
 
 if [ -z $AZKABAN_OPTS ]; then
   AZKABAN_OPTS=-Xmx3G
 fi
-# Set the log4j configuration file
-if [ -f $conf/log4j.properties ]; then
-  AZKABAN_OPTS="$AZKABAN_OPTS -Dlog4j.configuration=file:$conf/log4j.properties"
-fi
 AZKABAN_OPTS="$AZKABAN_OPTS -server -Dcom.sun.management.jmxremote -Djava.io.tmpdir=$tmpdir -Dexecutorport=$executorport -Dserverpath=$serverpath -Dlog4j.log.dir=$azkaban_dir/logs"
 
-java $AZKABAN_OPTS -cp $CLASSPATH azkaban.soloserver.AzkabanSingleServer -conf $conf $@ &
+java $AZKABAN_OPTS -cp $CLASSPATH azkaban.soloserver.AzkabanSingleServer -conf $azkaban_dir/conf $@ &
 
 echo $! > $azkaban_dir/currentpid
 
