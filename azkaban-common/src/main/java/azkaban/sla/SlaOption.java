@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -52,7 +51,7 @@ public class SlaOption {
   private String type;
   private Map<String, Object> info;
   private List<String> actions;
-  private static final Logger logger = Logger.getLogger(SlaOption.class);
+
   private static DateTimeFormatter fmt = DateTimeFormat
       .forPattern("MM/dd, YYYY HH:mm");
 
@@ -143,26 +142,7 @@ public class SlaOption {
   public static String createSlaMessage(SlaOption slaOption, ExecutableFlow flow) {
     String type = slaOption.getType();
     int execId = flow.getExecutionId();
-    logger.info("++++++"+flow.getStatus());
-    logger.info("++++++"+flow.getStatus().getNumVal());
-    logger.info("++++++"+flow.getStatus()=="FAILED");
-    if(flow.getStatus().toString()=="FAILED"||flow.getStatus().getNumVal()==70||flow.getStatus().getNumVal()==80)
-    {
-      String flowName =
-              (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
-      String duration =
-              (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
-      String basicinfo =
-              "SLA Alert: Your flow " + flowName + " failed to FINISH within "
-                      + duration + "</br>";
-      String expected =
-              "Here is details : </br>" + "Flow " + flowName + " in execution "
-                      + execId + " is expected to FINISH within " + duration + " from "
-                      + fmt.print(new DateTime(flow.getStartTime())) + "</br>";
-      String actual = "Actual flow status is " + flow.getStatus();
-      return basicinfo + expected + actual;
-    }
-    else if (type.equals(SlaOption.TYPE_FLOW_FINISH)) {
+    if (type.equals(SlaOption.TYPE_FLOW_FINISH)) {
       String flowName =
           (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
       String duration =
