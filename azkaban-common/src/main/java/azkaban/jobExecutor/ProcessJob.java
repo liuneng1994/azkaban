@@ -176,12 +176,7 @@ public class ProcessJob extends AbstractProcessJob {
   }
 
   private boolean determineExecuteAsUser(Props sysProps, Props jobProps) {
-    boolean isExecuteAsUser = sysProps.getBoolean(EXECUTE_AS_USER, false);
-    // putting an override in case user needs to override. A temporary opening
-    if (jobProps.containsKey(EXECUTE_AS_USER_OVERRIDE))
-      isExecuteAsUser = jobProps.getBoolean(EXECUTE_AS_USER_OVERRIDE, false);
-
-    return isExecuteAsUser;
+    return sysProps.getBoolean(EXECUTE_AS_USER, false);
   }
 
   /**
