@@ -350,8 +350,6 @@ public class TriggerManager extends EventHandler implements
                 {
                   boolean dflag=true;
                   boolean mflag=true;
-                  ExecutableFlow depf = new ExecutableFlow();
-                  ExecutableFlow mutf = new ExecutableFlow();
                   if(flows.size()!=0) {
                     dflag = false;
                     /*********************************/
