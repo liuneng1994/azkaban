@@ -142,7 +142,22 @@ public class SlaOption {
   public static String createSlaMessage(SlaOption slaOption, ExecutableFlow flow) {
     String type = slaOption.getType();
     int execId = flow.getExecutionId();
-    if (type.equals(SlaOption.TYPE_FLOW_FINISH)) {
+    if(flow.getStatus().toString()=="FAILED"||flow.getStatus().getNumVal()==70||flow.getStatus().getNumVal()==80)
+    {
+      String flowName =
+              (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
+      String duration =
+              (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
+      String basicinfo =
+              "SLA Alert: Your flow " + flowName + " failed to FINISH within "
+                      + duration + "</br>";
+      String expected =
+              "Here is details : </br>" + "Flow " + flowName + " in execution "
+                      + execId + " is expected to FINISH within " + duration + " from "
+                      + fmt.print(new DateTime(flow.getStartTime())) + "</br>";
+      String actual = "Actual flow status is " + flow.getStatus();
+      return basicinfo + expected + actual;
+    } else if (type.equals(SlaOption.TYPE_FLOW_FINISH)) {
       String flowName =
           (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
       String duration =
