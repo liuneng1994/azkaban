@@ -29,7 +29,7 @@ public class SystemMemoryInfo {
   private static long freeMemAmount = 0;
 
   //修改了最低内存限制原值:  3L*1024L*1024L
-  private static final long LOW_MEM_THRESHOLD = 200*1024L; //3 GB
+  private static final long LOW_MEM_THRESHOLD = 3L*1024L*1024L; //3 GB
 
   private static ScheduledExecutorService scheduledExecutorService;
 

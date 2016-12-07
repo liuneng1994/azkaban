@@ -9,6 +9,7 @@
 bin/
 */build/
 */node_modules
+classes
 
 # Intellij files
 .idea
