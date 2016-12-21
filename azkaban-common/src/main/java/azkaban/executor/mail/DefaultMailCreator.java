@@ -68,7 +68,7 @@ public class DefaultMailCreator implements MailCreator {
     if (emailList != null && !emailList.isEmpty()) {
       message.addAllToAddress(emailList);
       message.setMimeType("text/html");
-      message.setSubject(getZh_CN("任务流：") + flow.getFlowId() + "' "+getZh_CN("已经运行失败！ "));
+      message.setSubject("Flow:" + flow.getFlowId() + "' has Failed");
 
       message.println("<h2 style=\"color:#FF0000\"> '"+getZh_CN("任务流：")+
            flow.getFlowId()+getZh_CN(" 执行编号为：")+ flow.getExecutionId()
@@ -131,7 +131,7 @@ public class DefaultMailCreator implements MailCreator {
     if (emailList != null && !emailList.isEmpty()) {
       message.addAllToAddress(emailList);
       message.setMimeType("text/html");
-      message.setSubject(getZh_CN("任务流：") + flow.getFlowId() + "' "+getZh_CN("已经运行失败！ "));
+      message.setSubject("Flow:" + flow.getFlowId() + "' "+"has Failed");
 
       message.println("<h2 style=\"color:#FF0000\"> '"+getZh_CN("任务流：")+
               flow.getFlowId()+getZh_CN(" 执行编号为：")+ flow.getExecutionId()
@@ -184,7 +184,7 @@ public class DefaultMailCreator implements MailCreator {
     if (emailList != null && !emailList.isEmpty()) {
       message.addAllToAddress(emailList);
       message.setMimeType("text/html");
-      message.setSubject(getZh_CN("任务流：") + flow.getFlowId() + "' "+getZh_CN("已经成功运行！"));
+      message.setSubject("Flow:" + flow.getFlowId() + "' has Successed");
       message.println("<h2 style=\"color:#00E5EE\"> '"+getZh_CN("任务流：")+
               flow.getFlowId()+getZh_CN(" 执行编号为：")+ flow.getExecutionId()
               + getZh_CN(" 已经执行成功！")+"'</h2>");
