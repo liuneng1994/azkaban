@@ -9,9 +9,12 @@
 bin/
 */build/
 */node_modules
+classes
 
 # Intellij files
 .idea
 *.iml
 *.ipr
 *.iws
+!/classes/
+/classes/

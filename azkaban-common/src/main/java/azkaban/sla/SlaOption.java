@@ -16,6 +16,7 @@
 
 package azkaban.sla;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -142,63 +143,26 @@ public class SlaOption {
   public static String createSlaMessage(SlaOption slaOption, ExecutableFlow flow) {
     String type = slaOption.getType();
     int execId = flow.getExecutionId();
-    if(flow.getStatus().toString()=="FAILED"||flow.getStatus().getNumVal()==70||flow.getStatus().getNumVal()==80)
+    if((flow.getStatus().toString()=="FAILED"||flow.getStatus().getNumVal()==70||flow.getStatus().getNumVal()==80)&&(type.equals(SlaOption.TYPE_FLOW_FINISH)||type.equals(SlaOption.TYPE_JOB_FINISH)))
     {
       String flowName =
               (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
       String duration =
               (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
       String basicinfo =
-              "SLA Alert: Your flow " + flowName + " failed to FINISH within "
-                      + duration + "</br>";
+              "SLA 警告: 您的任务流 " + flowName + " 完成失败！ "
+                      + "</br>";
       String expected =
-              "Here is details : </br>" + "Flow " + flowName + " in execution "
-                      + execId + " is expected to FINISH within " + duration + " from "
-                      + fmt.print(new DateTime(flow.getStartTime())) + "</br>";
-      String actual = "Actual flow status is " + flow.getStatus();
-      return basicinfo + expected + actual;
-    } else if (type.equals(SlaOption.TYPE_FLOW_FINISH)) {
-      String flowName =
-          (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
-      String duration =
-          (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
-      String basicinfo =
-          "SLA Alert: Your flow " + flowName + " failed to FINISH within "
-              + duration + "</br>";
-      String expected =
-          "Here is details : </br>" + "Flow " + flowName + " in execution "
-              + execId + " is expected to FINISH within " + duration + " from "
-              + fmt.print(new DateTime(flow.getStartTime())) + "</br>";
-      String actual = "Actual flow status is " + flow.getStatus();
-      return basicinfo + expected + actual;
-    } else if (type.equals(SlaOption.TYPE_FLOW_SUCCEED)) {
-      String flowName =
-          (String) slaOption.getInfo().get(SlaOption.INFO_FLOW_NAME);
-      String duration =
-          (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
-      String basicinfo =
-          "SLA Alert: Your flow " + flowName + " failed to SUCCEED within "
-              + duration + "</br>";
-      String expected =
-          "Here is details : </br>" + "Flow " + flowName + " in execution "
-              + execId + " expected to FINISH within " + duration + " from "
-              + fmt.print(new DateTime(flow.getStartTime())) + "</br>";
-      String actual = "Actual flow status is " + flow.getStatus();
-      return basicinfo + expected + actual;
-    } else if (type.equals(SlaOption.TYPE_JOB_FINISH)) {
-      String jobName =
-          (String) slaOption.getInfo().get(SlaOption.INFO_JOB_NAME);
-      String duration =
-          (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
-      return "SLA Alert: Your job " + jobName + " failed to FINISH within "
-          + duration + " in execution " + execId;
-    } else if (type.equals(SlaOption.TYPE_JOB_SUCCEED)) {
-      String jobName =
-          (String) slaOption.getInfo().get(SlaOption.INFO_JOB_NAME);
-      String duration =
-          (String) slaOption.getInfo().get(SlaOption.INFO_DURATION);
-      return "SLA Alert: Your job " + jobName + " failed to SUCCEED within "
-          + duration + " in execution " + execId;
+              "这里是详情 : </br>" + "任务流 " + flowName + " ，编号为： "
+                      + execId +"在"+ fmt.print(new DateTime(flow.getStartTime()))+" 运行失败！ " + "</br>";
+      String actual = "现在任务流的状态为： " + flow.getStatus();
+      String content="";
+      try {
+        content=new String((basicinfo + expected + actual).getBytes("UTF-8"), "ISO-8859-1");
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      }
+      return content;
     } else {
       return "Unrecognized SLA type " + type;
     }
