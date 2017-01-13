@@ -16,5 +16,5 @@ classes
 *.iml
 *.ipr
 *.iws
-!/classes/
+/classes/
 /classes/
