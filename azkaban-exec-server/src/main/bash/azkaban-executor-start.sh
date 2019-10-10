@@ -42,7 +42,7 @@ echo "Starting AzkabanExecutorServer on port $executorport ..."
 serverpath=`pwd`
 
 if [ -z $AZKABAN_OPTS ]; then
-  AZKABAN_OPTS="-Xmx3G"
+  AZKABAN_OPTS="-Xmx2048M"
 fi
 AZKABAN_OPTS="$AZKABAN_OPTS -server -Dcom.sun.management.jmxremote -Djava.io.tmpdir=$tmpdir -Dexecutorport=$executorport -Dserverpath=$serverpath -Dlog4j.log.dir=$azkaban_dir/logs"
 

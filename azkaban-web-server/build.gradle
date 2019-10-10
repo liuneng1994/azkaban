@@ -74,7 +74,7 @@ sourceSets {
   }
 }
 
-task movingJsTojsToPackage(dependsOn: ['npm_install']) {
+task movingJsTojsToPackage() {
 
   doLast {
     copy {
@@ -103,7 +103,7 @@ task cleanAll {
 }
 clean.dependsOn cleanAll
 
-task jsTest(dependsOn: ['npm_install'], type: NodeTask) {
+task jsTest( type: NodeTask) {
 
   // refer to mocha js script file.
   script = file('node_modules/mocha/bin/mocha')

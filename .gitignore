@@ -18,3 +18,4 @@ classes
 *.iws
 /classes/
 /classes/
+*/out/

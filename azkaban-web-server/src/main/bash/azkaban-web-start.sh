@@ -41,7 +41,7 @@ executorport=`cat $azkaban_dir/conf/azkaban.properties | grep executor.port | cu
 serverpath=`pwd`
 
 if [ -z $AZKABAN_OPTS ]; then
-  AZKABAN_OPTS="-Xmx4G"
+  AZKABAN_OPTS="-Xmx200M"
 fi
 AZKABAN_OPTS="$AZKABAN_OPTS -server -Dcom.sun.management.jmxremote -Djava.io.tmpdir=$tmpdir -Dexecutorport=$executorport -Dserverpath=$serverpath -Dlog4j.log.dir=$azkaban_dir/logs"
 
