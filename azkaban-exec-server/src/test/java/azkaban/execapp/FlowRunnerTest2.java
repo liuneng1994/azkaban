@@ -1420,7 +1420,7 @@ public class FlowRunnerTest2 {
 
     FlowRunner runner = new FlowRunner(
         fakeExecutorLoader.fetchExecutableFlow(exId), fakeExecutorLoader,
-        fakeProjectLoader, jobtypeManager);
+        fakeProjectLoader, jobtypeManager,null,null);
 
     runner.addListener(eventCollector);
 

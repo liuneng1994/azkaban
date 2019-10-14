@@ -52,6 +52,7 @@ public class ExecutableNode {
   private long startTime = -1;
   private long endTime = -1;
   private long updateTime = -1;
+  private String extra;
 
   // Path to Job File
   private String jobSource;
@@ -115,7 +116,13 @@ public class ExecutableNode {
   public String getId() {
     return id;
   }
+  public String getExtra() {
+    return extra;
+  }
 
+  public void setExtra(String extra) {
+    this.extra = extra;
+  }
   public void setId(String id) {
     this.id = id;
   }

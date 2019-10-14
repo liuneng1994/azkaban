@@ -15,6 +15,7 @@
  */
 package azkaban.executor;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

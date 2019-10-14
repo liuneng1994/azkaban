@@ -23,15 +23,12 @@ import azkaban.event.EventHandler;
 import azkaban.event.EventListener;
 import azkaban.executor.ExecutableFlow;
 import azkaban.executor.ExecutorManager;
-import azkaban.executor.JdbcExecutorLoader;
 import azkaban.executor.Status;
 import azkaban.mutFlows.MutFlows;
 import azkaban.mutFlows.MutFlowsLoader;
-import azkaban.mutFlows.jdbcMutFlowsLoader;
+import azkaban.mutFlows.JdbcMutFlowsLoader;
 import azkaban.trigger.builtin.ExecuteFlowAction;
-import azkaban.trigger.builtin.KillExecutionAction;
 import azkaban.utils.Props;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -67,7 +64,7 @@ public class TriggerManager extends EventHandler implements
   private String scannerStage = "";
 
   public TriggerManager(Props props, TriggerLoader triggerLoader,
-                        ExecutorManager executorManager,DepFlowsLoader depFlowsLoader,jdbcMutFlowsLoader mutFlowsLoader) throws TriggerManagerException {
+                        ExecutorManager executorManager, DepFlowsLoader depFlowsLoader, JdbcMutFlowsLoader mutFlowsLoader) throws TriggerManagerException {
     this.executorManager = executorManager;
     this.triggerLoader = triggerLoader;
     this.depFlowsLoader = depFlowsLoader;

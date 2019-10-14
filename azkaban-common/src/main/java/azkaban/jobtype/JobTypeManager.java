@@ -24,6 +24,8 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import azkaban.executionParams.JdbcDispExecutionParamsLoader;
+import azkaban.wfJobParams.JdbcDispWfJobParamsLoader;
 import org.apache.log4j.Logger;
 
 import azkaban.jobExecutor.JavaProcessJob;
@@ -366,11 +368,13 @@ public class JobTypeManager {
           (Job) Utils.callConstructor(executorClass, jobId, pluginLoadProps,
               jobProps, logger);
     } catch (Exception e) {
+      e.printStackTrace();
       logger.error("Failed to build job executor for job " + jobId
           + e.getMessage());
       throw new JobTypeManagerException("Failed to build job executor for job "
           + jobId, e);
     } catch (Throwable t) {
+      t.printStackTrace();
       logger.error(
           "Failed to build job executor for job " + jobId + t.getMessage(), t);
       throw new JobTypeManagerException("Failed to build job executor for job "

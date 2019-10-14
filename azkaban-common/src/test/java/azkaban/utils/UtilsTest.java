@@ -19,6 +19,9 @@ package azkaban.utils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Map;
+
 /**
  * Test class for azkaban.utils.Utils
  */
@@ -51,5 +54,15 @@ public class UtilsTest {
     Assert.assertTrue(Utils.isValidPort(10000));
     Assert.assertTrue(Utils.isValidPort(3030));
     Assert.assertTrue(Utils.isValidPort(1045));
+  }
+
+  @Test
+  public void test(){
+    try {
+      Map<String,String> a = (Map<String, String>) JSONUtils.parseJSONFromString("{\"a\":1}");
+      System.out.println(a.toString());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

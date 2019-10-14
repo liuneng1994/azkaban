@@ -18,9 +18,9 @@ import java.util.List;
 /**
  * Created by 邓志龙 on 2016/10/19.
  */
-public class jdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLoader {
-    private static Logger logger = Logger.getLogger(jdbcMutFlowsLoader.class);
-    public jdbcMutFlowsLoader(Props props) {
+public class JdbcMutFlowsLoader extends AbstractJdbcLoader implements MutFlowsLoader {
+    private static Logger logger = Logger.getLogger(JdbcMutFlowsLoader.class);
+    public JdbcMutFlowsLoader(Props props) {
         super(props);
     }
     private EncodingType defaultEncodingType = EncodingType.PLAIN;

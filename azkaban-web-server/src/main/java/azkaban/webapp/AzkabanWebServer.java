@@ -38,7 +38,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import azkaban.depFlows.jdbcDepFlowsLoader;
-import azkaban.mutFlows.jdbcMutFlowsLoader;
+import azkaban.mutFlows.JdbcMutFlowsLoader;
 import azkaban.webapp.filter.CustomRequestFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -277,7 +277,7 @@ public class AzkabanWebServer extends AzkabanServer {
           throws TriggerManagerException {
     TriggerLoader loader = new JdbcTriggerLoader(props);
     jdbcDepFlowsLoader flowsLoader=new jdbcDepFlowsLoader(props);
-    jdbcMutFlowsLoader mutFlowsLoader=new jdbcMutFlowsLoader(props);
+    JdbcMutFlowsLoader mutFlowsLoader=new JdbcMutFlowsLoader(props);
     return new TriggerManager(props, loader, executorManager,flowsLoader,mutFlowsLoader);
   }
 
