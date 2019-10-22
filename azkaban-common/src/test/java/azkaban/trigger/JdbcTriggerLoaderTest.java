@@ -216,7 +216,7 @@ public class JdbcTriggerLoaderTest {
     List<TriggerAction> actions = new ArrayList<TriggerAction>();
     TriggerAction action =
         new ExecuteFlowAction("executeAction", 1, projName, flowName,
-            "azkaban", new ExecutionOptions(), null);
+            "azkaban", new ExecutionOptions(), null,null);
     actions.add(action);
     Trigger t =
         new Trigger(now.getMillis(), now.getMillis(), "azkaban", source,

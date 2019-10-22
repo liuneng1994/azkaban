@@ -98,7 +98,7 @@ public class ExecutorServlet extends HttpServlet implements ConnectorParams {
         } else {
           int execid = Integer.parseInt(getParam(req, EXECID_PARAM));
           String user = getParam(req, USER_PARAM, null);
-          logger.info(String.format("拿到extra参数%s", getParam(req, "extra", "")));
+          logger.info(String.format("拿到extra参数%s", getParam(req, "extra", "{}")));
           logger.info("User " + user + " has called action " + action + " on "
               + execid);
           if (action.equals(METADATA_ACTION)) {

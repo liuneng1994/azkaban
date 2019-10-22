@@ -28,10 +28,23 @@ public class JdbcDispWfJobParamsLoader extends AbstractJdbcLoader implements Dis
 
     private EncodingType defaultEncodingType = EncodingType.PLAIN;
     private static String GET_DISP_WF_JOB_PARAMS =
-            "SELECT xdwjp.param_id, xdwjp.workflow_id, xdwjp.job_id, xdwjp.param_key, " +
-                    " xdwjp.param_value, xdwjp.tenant_id FROM xdis_disp_wf_job_params AS xdwjp WHERE xdwjp.workflow_id  " +
-                    "= (select workflow_id from xdis_dispatch_workflow where workflow_code = ?) AND xdwjp.job_id  " +
-                    "= (select job_id from xdis_dispatch_job where job_code = ?)";
+            "SELECT " +
+                    " xdwjp.param_id, " +
+                    "xdwjp.workflow_id," +
+                    "xdwjp.job_id," +
+                    "xdwjp.param_key," +
+                    "xdwjp.param_value," +
+                    "xdwjp.tenant_id," +
+                    "xdwjp.graph_id " +
+                    "FROM " +
+                    "xdis_disp_wf_job_params AS xdwjp " +
+                    "LEFT JOIN xdis_dispatch_workflow xdw ON xdwjp.workflow_id = xdw.workflow_id " +
+                    "LEFT JOIN xdis_disp_workflow_job xdwj ON xdwj.source_job_id = xdwjp.job_id " +
+                    "AND xdwjp.graph_id = xdwj.graph_id " +
+                    "WHERE " +
+                    "xdw.workflow_name = ? " +
+                    "AND xdwj.workflow_job_name = ? " +
+                    "AND xdwj.job_type = 'job'";
 
 
     public class DispWfJobParamsResultHandler implements ResultSetHandler<List<DispWfJobParams>> {
@@ -49,6 +62,8 @@ public class JdbcDispWfJobParamsLoader extends AbstractJdbcLoader implements Dis
                 Long jobId = rs.getLong(3);
                 String paramKey = rs.getString(4);
                 String paramValue = rs.getString(5);
+                Long tenantId = rs.getLong(6);
+                String graphId = rs.getString(7);
                 Object jsonObj = null;
 
                 DispWfJobParams param = new DispWfJobParams();
@@ -57,6 +72,8 @@ public class JdbcDispWfJobParamsLoader extends AbstractJdbcLoader implements Dis
                 param.setJobId(jobId);
                 param.setParamKey(paramKey);
                 param.setParamValue(paramValue);
+                param.setTenantId(tenantId);
+                param.setGraphId(graphId);
                 params.add(param);
             } while (rs.next());
 

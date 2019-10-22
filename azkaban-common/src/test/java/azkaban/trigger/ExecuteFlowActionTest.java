@@ -41,7 +41,7 @@ public class ExecuteFlowActionTest {
 
     ExecuteFlowAction executeFlowAction =
         new ExecuteFlowAction("ExecuteFlowAction", 1, "testproject",
-            "testflow", "azkaban", options, null);
+            "testflow", "azkaban", options, null, null);
 
     Object obj = executeFlowAction.toJson();
 

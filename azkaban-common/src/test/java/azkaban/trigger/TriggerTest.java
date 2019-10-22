@@ -67,7 +67,7 @@ public class TriggerTest {
     List<TriggerAction> actions = new ArrayList<TriggerAction>();
     TriggerAction action =
         new ExecuteFlowAction("executeAction", 1, "testProj", "testFlow",
-            "azkaban", new ExecutionOptions(), null);
+            "azkaban", new ExecutionOptions(), null,null);
     actions.add(action);
     Trigger t =
         new Trigger(now.getMillis(), now.getMillis(), "azkaban", "test",

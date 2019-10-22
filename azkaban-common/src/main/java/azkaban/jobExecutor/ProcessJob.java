@@ -30,6 +30,7 @@ import azkaban.utils.JSONUtils;
 import azkaban.wfJobParams.DispWfJobParams;
 import azkaban.wfJobParams.JdbcDispWfJobParamsLoader;
 import com.google.common.io.Files;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,6 +44,7 @@ import azkaban.utils.SystemMemoryInfo;
 
 import static azkaban.flow.CommonJobProperties.EXEC_ID;
 import static azkaban.flow.CommonJobProperties.PROJECT_NAME;
+import static azkaban.flow.SpecialJobTypes.FLOW_NAME;
 
 /**
  * A job that runs a simple unix command
@@ -92,7 +94,7 @@ public class ProcessJob extends AbstractProcessJob {
 
     @Override
     public void run() throws Exception {
-        info(String.format("ProcessJob中的extra:%s", jobProps.getString("extra", "")));
+        info(String.format("ProcessJob中的extra:%s", jobProps.getString("extra", "{}")));
         try {
             resolveProps();
         } catch (Exception e) {
@@ -152,15 +154,18 @@ public class ProcessJob extends AbstractProcessJob {
         }
         info("-------------jobPros" + jobProps.toString());
         /**
-         * 获取到任务上的参数
+         * 如果是子人物流就获取子任务流的参数，否则就获取当前任务流上的参数
          */
+        if (jobProps.containsKey(FLOW_NAME)) {
+            String subWorkflowCode = jobProps.getString(FLOW_NAME);
+        }
         String workflowCode = jobProps.getString(PROJECT_NAME);
         String jobCode = jobProps.getString(CommonJobProperties.JOB_ID);
         Long execId = jobProps.getLong(EXEC_ID);
         info(String.format("参数为：workflowCode = %s - jobCode = %s", workflowCode, jobCode));
         List<DispWfJobParams> dispWfJobParamsList = dispWfJobParamsLoader.loadWfJobParams(workflowCode, jobCode);
         // 获取扩展参数
-        String extra = jobProps.getString("extra", "");
+        String extra = jobProps.getString("extra", "{}");
         Map<String, String> extraMap = new HashMap<>();
         if (!StringUtils.isEmpty(extra) && extra.contains("{")) {
             info(String.format("extra：%s", extra));
@@ -172,7 +177,7 @@ public class ProcessJob extends AbstractProcessJob {
         //先删除已经存在的参数
         int deleteNum = 0;
         int insertNum = 0;
-        if (!dispWfJobParamsList.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(dispWfJobParamsList)) {
             deleteNum = dispExecutionParamsLoader.delete(execId, workflowCode, jobCode);
             insertNum = dispExecutionParamsLoader.insert(execId, workflowCode, jobCode);
         }

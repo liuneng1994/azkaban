@@ -17,6 +17,7 @@
 package azkaban.trigger;
 
 import azkaban.database.AbstractJdbcLoader;
+import azkaban.trigger.builtin.ExecuteFlowAction;
 import azkaban.utils.GZIPUtils;
 import azkaban.utils.JSONUtils;
 import azkaban.utils.Props;
@@ -180,6 +181,7 @@ public class JdbcTriggerLoader extends AbstractJdbcLoader implements
         logger.error("trigger id is not properly created.");
         throw new TriggerLoaderException("trigger id is not properly created.");
       }
+      t.getActions().forEach(action->{logger.info("jdbcTriggetLoader--addTrigger----extra"+((ExecuteFlowAction)action).getExtra());});
 
       t.setTriggerId((int) id);
       updateTrigger(t);
@@ -212,6 +214,7 @@ public class JdbcTriggerLoader extends AbstractJdbcLoader implements
       EncodingType encType) throws TriggerLoaderException {
 
     String json = JSONUtils.toJSON(t.toJson());
+    logger.info("jdbcTriggerLoader---updateTrigger--extra1"+json);
     byte[] data = null;
     try {
       byte[] stringData = json.getBytes("UTF-8");

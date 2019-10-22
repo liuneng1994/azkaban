@@ -158,7 +158,6 @@ public class PropsUtils {
             String value = props.get(key);
 
             visitedVariables.add(key);
-          System.out.printf("%s----------%s%n", key, value);
             String replacedValue =
                     resolveVariableReplacement(value, props, visitedVariables);
             visitedVariables.clear();

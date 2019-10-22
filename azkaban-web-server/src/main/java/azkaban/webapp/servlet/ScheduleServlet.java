@@ -671,13 +671,14 @@ public class ScheduleServlet extends LoginAbstractAzkabanServlet {
     }
 
     List<SlaOption> slaOptions = null;
+    String extra = getParam(req, "extra", "{}");
 
     Schedule schedule =
         scheduleManager.scheduleFlow(-1, projectId, projectName, flowName,
             "ready", firstSchedTime.getMillis(), firstSchedTime.getZone(),
             thePeriod, DateTime.now().getMillis(), firstSchedTime.getMillis(),
             firstSchedTime.getMillis(), user.getUserId(), flowOptions,
-            slaOptions);
+            slaOptions, extra);
     logger.info("User '" + user.getUserId() + "' has scheduled " + "["
         + projectName + flowName + " (" + projectId + ")" + "].");
     projectManager.postProjectEvent(project, EventType.SCHEDULE,
@@ -752,12 +753,14 @@ public class ScheduleServlet extends LoginAbstractAzkabanServlet {
 
     List<SlaOption> slaOptions = null;
 
+    String extra = getParam(req, "extra", "{}");
+    logger.info(String.format("------------ScheduleServlet--extra :%s", extra));
     // Because either cronExpression or recurrence exists, we build schedule in the below way.
     Schedule schedule = scheduleManager.cronScheduleFlow(-1, projectId, projectName, flowName,
             "ready", firstSchedTime.getMillis(), firstSchedTime.getZone(),
             DateTime.now().getMillis(), firstSchedTime.getMillis(),
             firstSchedTime.getMillis(), user.getUserId(), flowOptions,
-            slaOptions, cronExpression);
+            slaOptions, cronExpression, extra);
 
     logger.info("User '" + user.getUserId() + "' has scheduled " + "["
         + projectName + flowName + " (" + projectId + ")" + "].");

@@ -28,25 +28,63 @@ public class JdbcDispExecutionParamsLoader extends AbstractJdbcLoader implements
 
     private EncodingType defaultEncodingType = EncodingType.PLAIN;
     private static String INSERT_DISP_WF_JOB_PARAMS =
-            "INSERT INTO `hdsp_dispatch`.`xdis_disp_execution_params` (execution_id, workflow_id, job_id, " +
-                    " param_key, param_value, tenant_id) " +
-                    "SELECT ? as execution_id, xdwjp.workflow_id as workflow_id, " +
-                    " xdwjp.job_id as job_id, xdwjp.param_key as param_key, xdwjp.param_value as param_value, " +
-                    "xdwjp.tenant_id as tenant_id " +
-                    "FROM xdis_disp_wf_job_params AS xdwjp WHERE " +
-                    " xdwjp.workflow_id = (select workflow_id from xdis_dispatch_workflow where workflow_code = ?) " +
-                    " AND xdwjp.job_id = (select job_id from xdis_dispatch_job where job_code = ?)";
+            "INSERT INTO `hdsp_dispatch`.`xdis_disp_execution_params` (" +
+                    "execution_id," +
+                    "workflow_id," +
+                    "job_id," +
+                    "param_key," +
+                    "param_value," +
+                    "tenant_id," +
+                    "graph_id" +
+                    ") SELECT " +
+                    "? AS execution_id," +
+                    "xdwjp.workflow_id AS workflow_id," +
+                    "xdwjp.job_id AS job_id," +
+                    "xdwjp.param_key AS param_key," +
+                    "xdwjp.param_value AS param_value," +
+                    "xdwjp.tenant_id AS tenant_id," +
+                    "xdwjp.graph_id as graph_id " +
+                    "FROM " +
+                    "xdis_disp_wf_job_params AS xdwjp " +
+                    "LEFT JOIN xdis_dispatch_workflow xdw ON xdwjp.workflow_id = xdw.workflow_id " +
+                    "LEFT JOIN xdis_disp_workflow_job xdwj ON xdwj.source_job_id = xdwjp.job_id " +
+                    "AND xdwjp.graph_id = xdwj.graph_id " +
+                    "WHERE " +
+                    "xdw.workflow_name = ? " +
+                    "AND xdwj.workflow_job_name = ? " +
+                    "AND xdwj.job_type = 'job'";
     private static String DELETE_DISP_WF_JOB_PARAMS =
-            "delete from `hdsp_dispatch`.`xdis_disp_execution_params` where " +
-                    " execution_id = ? " +
-                    " and workflow_id = (select workflow_id from xdis_dispatch_workflow where workflow_code = ?) " +
-                    " and job_id = (select job_id from xdis_dispatch_job where job_code = ?)";
+            "delete xdep1.* from `hdsp_dispatch`.`xdis_disp_execution_params` xdep1 " +
+                    "where param_id in (select param_id from (select param_id " +
+                    "FROM " +
+                    "`hdsp_dispatch`.`xdis_disp_execution_params` xdep " +
+                    "LEFT JOIN xdis_dispatch_workflow xdw ON xdep.workflow_id = xdw.workflow_id " +
+                    "LEFT JOIN xdis_disp_workflow_job xdwj ON xdwj.source_job_id = xdep.job_id " +
+                    "AND xdep.graph_id = xdwj.graph_id " +
+                    "WHERE xdep.execution_id = ? " +
+                    "AND xdw.workflow_name = ? " +
+                    "AND xdwj.workflow_job_name = ? " +
+                    "AND xdwj.job_type = 'job' " +
+                    ") tmp)";
     private static String GET_DISP_EXECUTION__PARAMS =
-            "SELECT xdep.param_id,xdep.execution_id, xdep.workflow_id, xdep.job_id, xdep.param_key," +
-                    " xdep.param_value, xdep.tenant_id FROM xdis_disp_execution_params AS xdep WHERE " +
-                    "xdep.execution_id = ? AND  xdep.workflow_id " +
-                    "= (select workflow_id from xdis_dispatch_workflow where workflow_code = ?) AND xdep.job_id " +
-                    "= (select job_id from xdis_dispatch_job where job_code = ?)";
+            "SELECT " +
+                    "xdep.param_id," +
+                    "xdep.execution_id," +
+                    "xdep.workflow_id," +
+                    "xdep.job_id," +
+                    "xdep.param_key," +
+                    "xdep.param_value," +
+                    "xdep.tenant_id," +
+                    "xdep.graph_id " +
+                    "FROM " +
+                    "xdis_disp_execution_params AS xdep " +
+                    "LEFT JOIN xdis_dispatch_workflow xdw ON xdep.workflow_id = xdw.workflow_id " +
+                    "LEFT JOIN xdis_disp_workflow_job xdwj ON xdwj.source_job_id = xdep.job_id " +
+                    "AND xdep.graph_id = xdwj.graph_id " +
+                    "WHERE xdep.execution_id = ?  " +
+                    "AND xdw.workflow_name = ?  " +
+                    "AND xdwj.workflow_job_name = ? " +
+                    "AND xdwj.job_type = 'job'";
 
     private Connection getConnection() {
         Connection connection = null;
@@ -134,6 +172,7 @@ public class JdbcDispExecutionParamsLoader extends AbstractJdbcLoader implements
                 String paramKey = rs.getString(5);
                 String paramValue = rs.getString(6);
                 Long tenantId = rs.getLong(7);
+                String graphId = rs.getString(8);
                 DispExecutionParams param = new DispExecutionParams();
                 param.setParamId(paramId);
                 param.setExecutionId(executionId);
@@ -142,6 +181,7 @@ public class JdbcDispExecutionParamsLoader extends AbstractJdbcLoader implements
                 param.setParamKey(paramKey);
                 param.setParamValue(paramValue);
                 param.setTenantId(tenantId);
+                param.setGraphId(graphId);
                 params.add(param);
             } while (rs.next());
 

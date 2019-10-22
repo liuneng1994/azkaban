@@ -1069,7 +1069,6 @@ public class ExecutorManager extends EventHandler implements
             Pair<String, String> pair = new Pair<String, String>("extra", exflow.getExtra());
 /*            return callExecutorServer(executor.getHost(), executor.getPort(), action,
                     exflow.getExecutionId(), null, (Pair<String, String>[]) null);*/
-            logger.info(String.format("callExecutorServer中的pair参数：%s", pair.toString()));
             return callExecutorServer(executor.getHost(), executor.getPort(), action,
                     exflow.getExecutionId(), null, pair);
         } catch (IOException e) {

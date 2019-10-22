@@ -247,7 +247,7 @@ public class Schedule2Trigger {
             new azkaban.scheduler.Schedule(-1, projectId, projectName,
                 flowName, "ready", firstSchedTimeLong, timezone, period,
                 DateTime.now().getMillis(), nextExecTimeLong, submitTimeLong,
-                submitUser, executionOptions, slaOptions, cronExpression);
+                submitUser, executionOptions, slaOptions, cronExpression,null);
         Trigger t = scheduleToTrigger(schedule);
         logger.info("Ready to insert trigger " + t.getDescription());
         triggerLoader.addTrigger(t);
@@ -278,7 +278,7 @@ public class Schedule2Trigger {
     ExecuteFlowAction executeAct =
         new ExecuteFlowAction("executeFlowAction", s.getProjectId(),
             s.getProjectName(), s.getFlowName(), s.getSubmitUser(),
-            s.getExecutionOptions(), s.getSlaOptions());
+            s.getExecutionOptions(), s.getSlaOptions(), s.getExtra());
     actions.add(executeAct);
 
     return actions;

@@ -27,7 +27,10 @@ import azkaban.executor.Status;
 import azkaban.mutFlows.MutFlows;
 import azkaban.mutFlows.MutFlowsLoader;
 import azkaban.mutFlows.JdbcMutFlowsLoader;
+import azkaban.trigger.builtin.BasicTimeChecker;
 import azkaban.trigger.builtin.ExecuteFlowAction;
+import azkaban.utils.CronTriggerUtil;
+import azkaban.utils.JSONUtils;
 import azkaban.utils.Props;
 import org.apache.log4j.Logger;
 
@@ -35,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TriggerManager extends EventHandler implements
     TriggerManagerAdapter {
@@ -458,11 +462,41 @@ public class TriggerManager extends EventHandler implements
 
     private void onTriggerTrigger(Trigger t) throws TriggerManagerException {
       List<TriggerAction> actions = t.getTriggerActions();
+      // 拿到执行时间
+      Map<String,ConditionChecker> map = t.getExpireCondition().getCheckers();
+      AtomicReference<String> express = new AtomicReference<>("");
+      map.forEach((k,v)->{
+        if(v instanceof BasicTimeChecker){
+          express.set(((BasicTimeChecker) v).getCronExpression());
+        }
+      });
+      Long nextTime = t.getExpireCondition().getNextCheckTime();
+      logger.info(String.format("express:%s---nextTime%d", express, nextTime));
+      String[] times = CronTriggerUtil.getLastTriggerTime(express.get(), nextTime);
       for (TriggerAction action : actions) {
         try {
-          logger.info(action);
-          logger.info("Doing trigger actions");
-          action.doAction();
+          if(action instanceof ExecuteFlowAction){
+            ExecuteFlowAction executeFlowAction =  (ExecuteFlowAction) action;
+            String extra = ((ExecuteFlowAction) action).getExtra();
+            if(extra==null||"".equals(extra)){
+              extra = "{}";
+            }
+            Map<String, String> extraMap = (Map<String, String>) JSONUtils.parseJSONFromString(extra);
+            if(times.length>1){
+              extraMap.put("system.start_date",times[0]);
+              extraMap.put("system.end_date",times[1]);
+            }else{
+              logger.error("上次执行时间获取错误----");
+            }
+            executeFlowAction.setExtra(JSONUtils.toJSON(extraMap));
+            logger.info(action);
+            logger.info("Doing trigger actions");
+            executeFlowAction.doAction();
+          }else{
+            logger.info(action);
+            logger.info("Doing trigger actions");
+            action.doAction();
+          }
         } catch (Exception e) {
           logger.error("Failed to do action " + action.getDescription(), e);
         } catch (Throwable th) {

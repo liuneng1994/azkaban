@@ -192,7 +192,7 @@ public class ScheduleManager implements TriggerAgent {
       final long nextExecTime, final long submitTime, final String submitUser) {
     return scheduleFlow(scheduleId, projectId, projectName, flowName, status,
         firstSchedTime, timezone, period, lastModifyTime, nextExecTime,
-        submitTime, submitUser, null, null);
+        submitTime, submitUser, null, null, null);
   }
 
   public Schedule scheduleFlow(final int scheduleId, final int projectId,
@@ -200,11 +200,11 @@ public class ScheduleManager implements TriggerAgent {
       final long firstSchedTime, final DateTimeZone timezone,
       final ReadablePeriod period, final long lastModifyTime,
       final long nextExecTime, final long submitTime, final String submitUser,
-      ExecutionOptions execOptions, List<SlaOption> slaOptions) {
+      ExecutionOptions execOptions, List<SlaOption> slaOptions, String extra) {
     Schedule sched =
         new Schedule(scheduleId, projectId, projectName, flowName, status,
             firstSchedTime, timezone, period, lastModifyTime, nextExecTime,
-            submitTime, submitUser, execOptions, slaOptions, null);
+            submitTime, submitUser, execOptions, slaOptions, null, extra);
     logger
         .info("Scheduling flow '" + sched.getScheduleName() + "' for "
             + _dateFormat.print(firstSchedTime) + " with a period of " + period == null ? "(non-recurring)"
@@ -219,15 +219,15 @@ public class ScheduleManager implements TriggerAgent {
       final long firstSchedTime, final DateTimeZone timezone,
       final long lastModifyTime,
       final long nextExecTime, final long submitTime, final String submitUser,
-      ExecutionOptions execOptions, List<SlaOption> slaOptions, String cronExpression) {
+      ExecutionOptions execOptions, List<SlaOption> slaOptions, String cronExpression, String extra) {
     Schedule sched =
         new Schedule(scheduleId, projectId, projectName, flowName, status,
             firstSchedTime, timezone, null, lastModifyTime, nextExecTime,
-            submitTime, submitUser, execOptions, slaOptions, cronExpression);
+            submitTime, submitUser, execOptions, slaOptions, cronExpression, extra);
     logger
         .info("Scheduling flow '" + sched.getScheduleName() + "' for "
             + _dateFormat.print(firstSchedTime) + " cron Expression = " + cronExpression);
-
+    logger.info(String.format("------------ScheduleManager获取extra 参数：%s", extra));
     insertSchedule(sched);
     return sched;
   }

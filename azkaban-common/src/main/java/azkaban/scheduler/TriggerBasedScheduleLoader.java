@@ -58,6 +58,7 @@ public class TriggerBasedScheduleLoader implements ScheduleLoader {
         new Trigger(s.getScheduleId(), s.getLastModifyTime(),
             s.getSubmitTime(), s.getSubmitUser(), triggerSource,
             triggerCondition, expireCondition, actions);
+    t.getActions().forEach(action->{logger.info("scheduleToTrigger----extra"+((ExecuteFlowAction)action).getExtra());});
     if (s.isRecurring()) {
       t.setResetOnTrigger(true);
     } else {
@@ -71,7 +72,8 @@ public class TriggerBasedScheduleLoader implements ScheduleLoader {
     ExecuteFlowAction executeAct =
         new ExecuteFlowAction("executeFlowAction", s.getProjectId(),
             s.getProjectName(), s.getFlowName(), s.getSubmitUser(),
-            s.getExecutionOptions(), s.getSlaOptions());
+            s.getExecutionOptions(), s.getSlaOptions(), s.getExtra());
+    logger.info("createActions---extra"+executeAct.getExtra());
     actions.add(executeAct);
 
     return actions;
@@ -108,6 +110,7 @@ public class TriggerBasedScheduleLoader implements ScheduleLoader {
   public void insertSchedule(Schedule s) throws ScheduleManagerException {
     Trigger t = scheduleToTrigger(s);
     try {
+      logger.info(String.format("------------插入到trigger,TriggerBasedScheduleLoader 参数：%s", s.getExtra()));
       triggerManager.insertTrigger(t, t.getSubmitUser());
       s.setScheduleId(t.getTriggerId());
     } catch (TriggerManagerException e) {
@@ -119,6 +122,7 @@ public class TriggerBasedScheduleLoader implements ScheduleLoader {
   public void updateSchedule(Schedule s) throws ScheduleManagerException {
     Trigger t = scheduleToTrigger(s);
     try {
+      logger.info(String.format("------------修改trigger,TriggerBasedScheduleLoader 参数：%s", s.getExtra()));
       triggerManager.updateTrigger(t, t.getSubmitUser());
     } catch (TriggerManagerException e) {
       throw new ScheduleManagerException("Failed to update schedule!", e);
@@ -167,7 +171,7 @@ public class TriggerBasedScheduleLoader implements ScheduleLoader {
               t.getStatus().toString(), ck.getFirstCheckTime(),
               ck.getTimeZone(), ck.getPeriod(), t.getLastModifyTime(),
               ck.getNextCheckTime(), t.getSubmitTime(), t.getSubmitUser(),
-              act.getExecutionOptions(), act.getSlaOptions(), ck.getCronExpression());
+              act.getExecutionOptions(), act.getSlaOptions(), ck.getCronExpression(), act.getExtra());
       return s;
     } else {
       logger.error("Failed to parse schedule from trigger!");

@@ -53,12 +53,13 @@ public class ExecuteFlowAction implements TriggerAction {
   private static ProjectManager projectManager;
   private ExecutionOptions executionOptions = new ExecutionOptions();
   private List<SlaOption> slaOptions;
+  private String extra;
 
   private static Logger logger = Logger.getLogger(ExecuteFlowAction.class);
 
   public ExecuteFlowAction(String actionId, int projectId, String projectName,
       String flowName, String submitUser, ExecutionOptions executionOptions,
-      List<SlaOption> slaOptions) {
+      List<SlaOption> slaOptions, String extra) {
     this.actionId = actionId;
     this.projectId = projectId;
     this.projectName = projectName;
@@ -66,6 +67,15 @@ public class ExecuteFlowAction implements TriggerAction {
     this.submitUser = submitUser;
     this.executionOptions = executionOptions;
     this.slaOptions = slaOptions;
+    this.extra = extra;
+  }
+
+  public String getExtra() {
+    return extra;
+  }
+
+  public void setExtra(String extra) {
+    this.extra = extra;
   }
 
   public static void setLogger(Logger logger) {
@@ -154,6 +164,7 @@ public class ExecuteFlowAction implements TriggerAction {
   @SuppressWarnings("unchecked")
   public static TriggerAction createFromJson(HashMap<String, Object> obj) {
     Map<String, Object> jsonObj = (HashMap<String, Object>) obj;
+    logger.info("createFromJson"+jsonObj.toString());
     String objType = (String) jsonObj.get("type");
     if (!objType.equals(type)) {
       throw new RuntimeException("Cannot create action of " + type + " from "
@@ -164,6 +175,10 @@ public class ExecuteFlowAction implements TriggerAction {
     String projectName = (String) jsonObj.get("projectName");
     String flowName = (String) jsonObj.get("flowName");
     String submitUser = (String) jsonObj.get("submitUser");
+    String extra ="";
+    if(jsonObj.containsKey("extra")){
+      extra = (String) jsonObj.get("extra");
+    }
     ExecutionOptions executionOptions = null;
     if (jsonObj.containsKey("executionOptions")) {
       executionOptions =
@@ -178,7 +193,7 @@ public class ExecuteFlowAction implements TriggerAction {
       }
     }
     return new ExecuteFlowAction(actionId, projectId, projectName, flowName,
-        submitUser, executionOptions, slaOptions);
+        submitUser, executionOptions, slaOptions, extra);
   }
 
   @Override
@@ -190,6 +205,7 @@ public class ExecuteFlowAction implements TriggerAction {
     jsonObj.put("projectName", projectName);
     jsonObj.put("flowName", flowName);
     jsonObj.put("submitUser", submitUser);
+    jsonObj.put("extra", extra);
     if (executionOptions != null) {
       jsonObj.put("executionOptions", executionOptions.toObject());
     }
@@ -240,6 +256,8 @@ public class ExecuteFlowAction implements TriggerAction {
     exflow.setExecutionOptions(executionOptions);
 
     try {
+      exflow.setExtra(extra);
+      logger.info("ExecuteFlowAction--extra"+extra);
       executorManager.submitExecutableFlow(exflow, submitUser);
       logger.info("Invoked flow " + project.getName() + "." + flowName);
     } catch (ExecutorManagerException e) {

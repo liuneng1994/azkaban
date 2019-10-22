@@ -888,8 +888,8 @@ public class ExecutorServlet extends LoginAbstractAzkabanServlet {
         exflow.setSubmitUser(user.getUserId());
         exflow.addAllProxyUsers(project.getProxyUsers());
         // 加上自定参数
-        exflow.setExtra(getParam(req, "extra", ""));
-        System.out.printf("ExecutorServlet-----extra: %s%n", getParam(req, "extra", ""));
+        exflow.setExtra(getParam(req, "extra", "{}"));
+        System.out.printf("ExecutorServlet-----extra: %s%n", getParam(req, "extra", "{}"));
 
         ExecutionOptions options = HttpRequestUtils.parseFlowOptions(req);
         exflow.setExecutionOptions(options);

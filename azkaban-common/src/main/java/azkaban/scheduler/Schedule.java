@@ -54,6 +54,7 @@ public class Schedule {
   private String status;
   private long submitTime;
   private String cronExpression;
+  private String extra;
 
   private boolean skipPastOccurrences = true;
 
@@ -67,7 +68,7 @@ public class Schedule {
 
     this(scheduleId, projectId, projectName, flowName, status, firstSchedTime,
         timezone, period, lastModifyTime, nextExecTime, submitTime, submitUser,
-        null, null, null);
+        null, null, null, null);
   }
 
   public Schedule(int scheduleId, int projectId, String projectName,
@@ -78,14 +79,14 @@ public class Schedule {
     this(scheduleId, projectId, projectName, flowName, status, firstSchedTime,
         DateTimeZone.forID(timezoneId), parsePeriodString(period),
         lastModifyTime, nextExecTime, submitTime, submitUser, executionOptions,
-        slaOptions, null);
+        slaOptions, null, null);
   }
 
   public Schedule(int scheduleId, int projectId, String projectName,
       String flowName, String status, long firstSchedTime,
       DateTimeZone timezone, ReadablePeriod period, long lastModifyTime,
       long nextExecTime, long submitTime, String submitUser,
-      ExecutionOptions executionOptions, List<SlaOption> slaOptions, String cronExpression) {
+      ExecutionOptions executionOptions, List<SlaOption> slaOptions, String cronExpression, String extra) {
     this.scheduleId = scheduleId;
     this.projectId = projectId;
     this.projectName = projectName;
@@ -101,6 +102,7 @@ public class Schedule {
     this.executionOptions = executionOptions;
     this.slaOptions = slaOptions;
     this.cronExpression = cronExpression;
+    this.extra = extra;
   }
 
   public ExecutionOptions getExecutionOptions() {
@@ -385,4 +387,11 @@ public class Schedule {
     return skipPastOccurrences;
   }
 
+  public String getExtra() {
+    return extra;
+  }
+
+  public void setExtra(String extra) {
+    this.extra = extra;
+  }
 }
