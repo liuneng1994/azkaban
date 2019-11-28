@@ -17,6 +17,7 @@
 package azkaban.jobExecutor;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +43,7 @@ import azkaban.utils.Pair;
 import azkaban.utils.Props;
 import azkaban.utils.SystemMemoryInfo;
 
-import static azkaban.flow.CommonJobProperties.EXEC_ID;
-import static azkaban.flow.CommonJobProperties.PROJECT_NAME;
+import static azkaban.flow.CommonJobProperties.*;
 import static azkaban.flow.SpecialJobTypes.FLOW_NAME;
 
 /**
@@ -153,15 +153,33 @@ public class ProcessJob extends AbstractProcessJob {
             }
         }
         info("-------------jobPros" + jobProps.toString());
+        File tmpDir = Files.createTempDir();
+        String workflowCode = jobProps.getString(PROJECT_NAME);
+        String jobCode = jobProps.getString(CommonJobProperties.JOB_ID);
+        Long execId = jobProps.getLong(EXEC_ID);
         /**
-         * 如果是子人物流就获取子任务流的参数，否则就获取当前任务流上的参数
+         * 如果是子任务流就获取子任务流的参数，否则就获取当前任务流上的参数
          */
         if (jobProps.containsKey(FLOW_NAME)) {
             String subWorkflowCode = jobProps.getString(FLOW_NAME);
         }
-        String workflowCode = jobProps.getString(PROJECT_NAME);
-        String jobCode = jobProps.getString(CommonJobProperties.JOB_ID);
-        Long execId = jobProps.getLong(EXEC_ID);
+        Map<String, String> inNodeResult = new HashMap<>();
+        if (jobProps.containsKey(IN_NODES)) {
+            String inNodes = jobProps.getString(IN_NODES);
+            if (inNodes.length() > 0) {
+                String[] nodes = inNodes.split(",");
+                if (nodes.length > 0) {
+                    for (String node : nodes) {
+                        StringBuffer buffer = new StringBuffer();
+                        File result = new File(tmpDir, String.format("%d-%s.properties.result", execId, node));
+                        List<Map<String, String>> lines = (List<Map<String, String>>) JSONUtils.parseJSONFromFile(result);
+                        if(lines.size()>0){
+                            inNodeResult.putAll(lines.get(0));
+                        }
+                    }
+                }
+            }
+        }
         info(String.format("参数为：workflowCode = %s - jobCode = %s", workflowCode, jobCode));
         List<DispWfJobParams> dispWfJobParamsList = dispWfJobParamsLoader.loadWfJobParams(workflowCode, jobCode);
         // 获取扩展参数
@@ -190,6 +208,8 @@ public class ProcessJob extends AbstractProcessJob {
         dispExecutionParams.forEach(m -> paramMap.put(m.getParamKey(), m.getParamValue()));
         // 扩展参数中的优先级高
         paramMap.putAll(extraMap);
+        // 把上个节点的数据加入到参数中
+        paramMap.putAll(inNodeResult);
         List<String> contents = new ArrayList<>();
         paramMap.forEach((key, value) -> {
             if (value != null) {
@@ -199,7 +219,7 @@ public class ProcessJob extends AbstractProcessJob {
         });
         //写入到临时文件
         String fileName = String.format("%d-%s.properties", execId, jobCode);
-        File tempProp = new File(Files.createTempDir(), fileName);
+        File tempProp = new File(tmpDir, fileName);
         tempProp.deleteOnExit();
         tempProp.createNewFile();
         FileUtils.writeLines(tempProp, contents);

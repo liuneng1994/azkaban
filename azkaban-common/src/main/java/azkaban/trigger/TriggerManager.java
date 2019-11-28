@@ -472,7 +472,6 @@ public class TriggerManager extends EventHandler implements
       });
       Long nextTime = t.getExpireCondition().getNextCheckTime();
       logger.info(String.format("express:%s---nextTime%d", express, nextTime));
-      String[] times = CronTriggerUtil.getLastTriggerTime(express.get(), nextTime);
       for (TriggerAction action : actions) {
         try {
           if(action instanceof ExecuteFlowAction){
@@ -482,6 +481,7 @@ public class TriggerManager extends EventHandler implements
               extra = "{}";
             }
             Map<String, String> extraMap = (Map<String, String>) JSONUtils.parseJSONFromString(extra);
+            String[] times = CronTriggerUtil.getLastTriggerTime(express.get(), nextTime, extraMap);
             if(times.length>1){
               extraMap.put("system.start_date",times[0]);
               extraMap.put("system.end_date",times[1]);
