@@ -70,7 +70,6 @@ public class ProcessJob extends AbstractProcessJob {
             "execute.as.user.override";
     public static final String USER_TO_PROXY = "user.to.proxy";
     public static final String KRB5CCNAME = "KRB5CCNAME";
-
     private JdbcDispExecutionParamsLoader dispExecutionParamsLoader;
     private JdbcDispWfJobParamsLoader dispWfJobParamsLoader;
 
@@ -83,17 +82,10 @@ public class ProcessJob extends AbstractProcessJob {
         jobProps.put(CommonJobProperties.JOB_ID, jobId);
     }
 
-    public ProcessJob(ProcessJob job,
-                      JdbcDispExecutionParamsLoader dispExecutionParamsLoader,
-                      JdbcDispWfJobParamsLoader dispWfJobParamsLoader) {
-        super(job.getId(), job.getSysProps(), job.getJobProps(), job.getLog());
-        jobProps.put(CommonJobProperties.JOB_ID, job.getId());
-        this.dispExecutionParamsLoader = dispExecutionParamsLoader;
-        this.dispWfJobParamsLoader = dispWfJobParamsLoader;
-    }
-
     @Override
     public void run() throws Exception {
+        dispExecutionParamsLoader = dispExecutionParamsLoader!=null?dispExecutionParamsLoader:super.getDispExecutionParamsLoader();
+        dispWfJobParamsLoader = dispWfJobParamsLoader!=null?dispWfJobParamsLoader:super.getDispWfJobParamsLoader();
         info(String.format("ProcessJob中的extra:%s", jobProps.getString("extra", "{}")));
         try {
             resolveProps();

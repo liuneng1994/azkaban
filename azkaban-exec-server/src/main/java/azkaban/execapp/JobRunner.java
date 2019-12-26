@@ -544,8 +544,9 @@ public class JobRunner extends EventHandler implements Runnable {
             try {
                 logger.info(String.format("-----------JobRunner参数props:%s", props.toString()));
                 job = jobtypeManager.buildJobExecutor(this.jobId, props, logger);
-                if (job instanceof ProcessJob){
-                  job = new ProcessJob((ProcessJob)job,dispExecutionParamsLoader,dispWfJobParamsLoader);
+                if (job instanceof AbstractProcessJob){
+                    ((AbstractProcessJob) job).setDispExecutionParamsLoader(dispExecutionParamsLoader);
+                    ((AbstractProcessJob) job).setDispWfJobParamsLoader(dispWfJobParamsLoader);
                 }
             } catch (JobTypeManagerException e) {
                 logger.error("Failed to build job type", e);

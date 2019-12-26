@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import azkaban.executionParams.JdbcDispExecutionParamsLoader;
+import azkaban.wfJobParams.JdbcDispWfJobParamsLoader;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -46,6 +48,26 @@ public abstract class AbstractProcessJob extends AbstractJob {
   private static final String SENSITIVE_JOB_PROP_NAME_SUFFIX = "_X";
   private static final String SENSITIVE_JOB_PROP_VALUE_PLACEHOLDER = "[MASKED]";
   private static final String JOB_DUMP_PROPERTIES_IN_LOG = "job.dump.properties";
+
+  private JdbcDispExecutionParamsLoader dispExecutionParamsLoader;
+  private JdbcDispWfJobParamsLoader dispWfJobParamsLoader;
+
+  public JdbcDispExecutionParamsLoader getDispExecutionParamsLoader() {
+    return dispExecutionParamsLoader;
+  }
+
+  public JdbcDispWfJobParamsLoader getDispWfJobParamsLoader() {
+    return dispWfJobParamsLoader;
+  }
+
+  public void setDispExecutionParamsLoader(JdbcDispExecutionParamsLoader dispExecutionParamsLoader) {
+    this.dispExecutionParamsLoader = dispExecutionParamsLoader;
+  }
+
+
+  public void setDispWfJobParamsLoader(JdbcDispWfJobParamsLoader dispWfJobParamsLoader) {
+    this.dispWfJobParamsLoader = dispWfJobParamsLoader;
+  }
 
   protected final String _jobPath;
 
