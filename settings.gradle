@@ -6,3 +6,5 @@ include 'azkaban-solo-server'
 include 'azkaban-sql'
 include 'azkaban-web-server'
 include 'azkaban-test'
+include 'az-custom-common'
+

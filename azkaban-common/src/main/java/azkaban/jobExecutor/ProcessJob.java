@@ -18,10 +18,7 @@ package azkaban.jobExecutor;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -31,6 +28,9 @@ import azkaban.utils.JSONUtils;
 import azkaban.wfJobParams.DispWfJobParams;
 import azkaban.wfJobParams.JdbcDispWfJobParamsLoader;
 import com.google.common.io.Files;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.utils.CommonUtil;
+import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -84,8 +84,8 @@ public class ProcessJob extends AbstractProcessJob {
 
     @Override
     public void run() throws Exception {
-        dispExecutionParamsLoader = dispExecutionParamsLoader!=null?dispExecutionParamsLoader:super.getDispExecutionParamsLoader();
-        dispWfJobParamsLoader = dispWfJobParamsLoader!=null?dispWfJobParamsLoader:super.getDispWfJobParamsLoader();
+        dispExecutionParamsLoader = dispExecutionParamsLoader != null ? dispExecutionParamsLoader : super.getDispExecutionParamsLoader();
+        dispWfJobParamsLoader = dispWfJobParamsLoader != null ? dispWfJobParamsLoader : super.getDispWfJobParamsLoader();
         info(String.format("ProcessJob中的extra:%s", jobProps.getString("extra", "{}")));
         try {
             resolveProps();
@@ -160,7 +160,8 @@ public class ProcessJob extends AbstractProcessJob {
             String inNodes = jobProps.getString(IN_NODES);
             if (inNodes.length() > 0) {
                 String[] nodes = inNodes.split(",");
-                if (nodes.length > 0) {
+                // 先注释掉这段逻辑
+/*                if (nodes.length > 0) {
                     for (String node : nodes) {
                         StringBuffer buffer = new StringBuffer();
                         File result = new File(tmpDir, String.format("%d-%s.properties.result", execId, node));
@@ -169,7 +170,7 @@ public class ProcessJob extends AbstractProcessJob {
                             inNodeResult.putAll(lines.get(0));
                         }
                     }
-                }
+                }*/
             }
         }
         info(String.format("参数为：workflowCode = %s - jobCode = %s", workflowCode, jobCode));
@@ -263,6 +264,20 @@ public class ProcessJob extends AbstractProcessJob {
                 info("Process completed "
                         + (success ? "successfully" : "unsuccessfully") + " in "
                         + ((System.currentTimeMillis() - startMs) / 1000) + " seconds.");
+                String[] types = new String[]{"datax", "sqoop"};
+                info(String.format("当前任务类型为：%s", jobProps.getString(JobPropsKey.TYPE.getKey())));
+                if (Arrays.asList(types).contains(jobProps.getString(JobPropsKey.TYPE.getKey()))) {
+                    // 更新内置参数表
+                    String jobName = this.getJobProps().get(JobPropsKey.JOB_ID.getKey());
+                    String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
+                    String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+                    String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(this.getLog(), hdspPropertiesPath);
+                    ParamsUtil.updateSpecifiedParams(this.getLog(),
+                            hdspCoreUrl,
+                            0L,
+                            jobName,
+                            success);
+                }
             }
         }
         // Get the output properties from this job.
